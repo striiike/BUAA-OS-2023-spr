@@ -24,10 +24,7 @@ case_div: casegen.c
 
 case_all: case_add case_sub case_mul case_div
 	# without exception 
-	cat case_add > case_all
-	cat case_sub >> case_all
-	cat case_mul >> case_all
-	cat case_div >> case_all
+	cat case_add case_sub case_mul case_div > case_all
 
 
 clean:
