@@ -72,7 +72,7 @@ void *memset(void *s, int c, size_t n) {
 	void *res = s;
 	char *dst = (char *)s;
 	for (int i = 0; i < n; i++) {
-		dst[i] = (short)c;
+		dst[i] = (char)c;
 	}
 	return res;
 }
