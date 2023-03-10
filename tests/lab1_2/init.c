@@ -1,5 +1,5 @@
 static void printk_1_check(void) {
-	printk("%5d\n", 999999);
+	printk("%5o\n", 999999);
 	printk("%5d\n", 12);
 	printk("%5d\n", -12);
 	printk("%5d\n", -1234);
