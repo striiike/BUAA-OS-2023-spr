@@ -132,8 +132,11 @@ void mips_init() {
 	printk("init.c:\tmips_init() is called\n");
 
 	mips_detect_memory();
+	printk("detected\n");
 	mips_vm_init();
+	printk("vmed\n");
 	page_init();
+	printk("paged\n");
 
 	page_check();
 	page_strong_check();

@@ -88,10 +88,13 @@ void physical_memory_manage_strong_check(void) {
 void mips_init() {
 	printk("init.c:\tmips_init() is called\n");
 	mips_detect_memory();
+	printk("hihi\n");
 	mips_vm_init();
+	printk("hi\n");
 	page_init();
 
 	physical_memory_manage_check();
+	printk("done\n");
 	physical_memory_manage_strong_check();
 	halt();
 }

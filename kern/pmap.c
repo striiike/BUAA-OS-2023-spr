@@ -3,6 +3,7 @@
 #include <mmu.h>
 #include <pmap.h>
 #include <printk.h>
+#include <error.h>
 
 /* These variables are set by mips_detect_memory() */
 static u_long memsize; /* Maximum physical address */
@@ -25,6 +26,7 @@ void mips_detect_memory() {
 
 	/* Step 2: Calculate the corresponding 'npage' value. */
 	/* Exercise 2.1: Your code here. */
+	npage = memsize / BY2PG;
 
 	printk("Memory size: %lu KiB, number of pages: %lu\n", memsize / 1024, npage);
 }
@@ -91,15 +93,27 @@ void page_init(void) {
 	/* Hint: Use macro `LIST_INIT` defined in include/queue.h. */
 	/* Exercise 2.3: Your code here. (1/4) */
 
+	LIST_INIT(&page_free_list);
+
 	/* Step 2: Align `freemem` up to multiple of BY2PG. */
 	/* Exercise 2.3: Your code here. (2/4) */
 
+	freemem = ROUND(freemem, BY2PG);
+
 	/* Step 3: Mark all memory below `freemem` as used (set `pp_ref` to 1) */
 	/* Exercise 2.3: Your code here. (3/4) */
+	int i = 0;
+	for (; i < PPN(PADDR(freemem)); ++i) {
+		pa2page(i)->pp_ref = 1;
+	}
+	
 
 	/* Step 4: Mark the other memory as free. */
 	/* Exercise 2.3: Your code here. (4/4) */
-
+	for (; i < npage; ++i) {
+		pa2page(i)->pp_ref = 0;
+		LIST_INSERT_HEAD(&page_free_list, pages + i, pp_link);
+	}
 }
 
 /* Overview:
@@ -120,12 +134,17 @@ int page_alloc(struct Page **new) {
 	struct Page *pp;
 	/* Exercise 2.4: Your code here. (1/2) */
 
+	if (LIST_EMPTY(&page_free_list)) {
+		return -E_NO_MEM;
+	}
+	pp = LIST_FIRST(&page_free_list);
 	LIST_REMOVE(pp, pp_link);
 
 	/* Step 2: Initialize this page with zero.
 	 * Hint: use `memset`. */
 	/* Exercise 2.4: Your code here. (2/2) */
 
+	memset((void *)page2kva(pp), 0, BY2PG);
 	*new = pp;
 	return 0;
 }
@@ -140,6 +159,7 @@ void page_free(struct Page *pp) {
 	assert(pp->pp_ref == 0);
 	/* Just insert it into 'page_free_list'. */
 	/* Exercise 2.5: Your code here. */
+	LIST_INSERT_HEAD(&page_free_list, pp, pp_link);
 
 }
 
@@ -166,14 +186,41 @@ static int pgdir_walk(Pde *pgdir, u_long va, int create, Pte **ppte) {
 	/* Step 1: Get the corresponding page directory entry. */
 	/* Exercise 2.6: Your code here. (1/3) */
 
+	pgdir_entryp = pgdir + PDX(va);
+
+	/* test */
+	printk("va, pdx, ptx, pdbase, ptbase: %08X %08X %08X %08X %08X\n",           \
+	 	va, PDX(va), PTX(va), *pgdir, KADDR(PTE_ADDR(*pgdir_entryp)));
+	printk("pgdir_entry, pt_entry: %08X %08X\n", pgdir_entryp, (Pte *)(KADDR(PTE_ADDR(*pgdir_entryp))) + PTX(va));
+
+
 	/* Step 2: If the corresponding page table is not existent (valid) and parameter `create`
 	 * is set, create one. Set the permission bits 'PTE_D | PTE_V' for this new page in the
 	 * page directory.
 	 * If failed to allocate a new page (out of memory), return the error. */
 	/* Exercise 2.6: Your code here. (2/3) */
 
+	if ((*pgdir_entryp & PTE_V) == 0) {
+		if (create) {
+			int ret;
+			if ((ret = page_alloc(&pp)) == 0) {
+				*pgdir_entryp = page2pa(pp);
+				*pgdir_entryp |= PTE_D | PTE_V;
+				pp->pp_ref++;
+			} else {
+				return ret;
+			}
+		} else {
+			*ppte = NULL;
+			return 0;
+		}
+
+	}
+
 	/* Step 3: Assign the kernel virtual address of the page table entry to '*ppte'. */
 	/* Exercise 2.6: Your code here. (3/3) */
+
+	*ppte = (Pte *)(KADDR(PTE_ADDR(*pgdir_entryp))) + PTX(va);
 
 	return 0;
 }
@@ -209,13 +256,24 @@ int page_insert(Pde *pgdir, u_int asid, struct Page *pp, u_long va, u_int perm) 
 	/* Step 2: Flush TLB with 'tlb_invalidate'. */
 	/* Exercise 2.7: Your code here. (1/3) */
 
+	tlb_invalidate(asid, va);
+
 	/* Step 3: Re-get or create the page table entry. */
 	/* If failed to create, return the error. */
 	/* Exercise 2.7: Your code here. (2/3) */
 
+	int ret;
+	if ((ret = pgdir_walk(pgdir, va, 1, &pte)) != 0) {
+		return ret;
+	}
+
 	/* Step 4: Insert the page to the page table entry with 'perm | PTE_V' and increase its
 	 * 'pp_ref'. */
 	/* Exercise 2.7: Your code here. (3/3) */
+
+	*pte = page2pa(pp) | perm | PTE_V;
+	pp->pp_ref++;
+
 
 	return 0;
 }
@@ -412,7 +470,7 @@ void page_check(void) {
 	//	printk("pp1->pp_ref is %d\n",pp1->pp_ref);
 	assert(va2pa(boot_pgdir, 0x0) == page2pa(pp1));
 	assert(pp1->pp_ref == 1);
-
+	
 	// should be able to map pp2 at BY2PG because pp0 is already allocated for page table
 	assert(page_insert(boot_pgdir, 0, pp2, BY2PG, 0) == 0);
 	assert(va2pa(boot_pgdir, BY2PG) == page2pa(pp2));
