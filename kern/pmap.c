@@ -189,9 +189,9 @@ static int pgdir_walk(Pde *pgdir, u_long va, int create, Pte **ppte) {
 	pgdir_entryp = pgdir + PDX(va);
 
 	/* test */
-	printk("va, pdx, ptx, pdbase, ptbase: %08X %08X %08X %08X %08X\n",           \
-	 	va, PDX(va), PTX(va), *pgdir, KADDR(PTE_ADDR(*pgdir_entryp)));
-	printk("pgdir_entry, pt_entry: %08X %08X\n", pgdir_entryp, (Pte *)(KADDR(PTE_ADDR(*pgdir_entryp))) + PTX(va));
+	// printk("va, pdx, ptx, pdbase, ptbase: %08X %08X %08X %08X %08X\n",           \
+	//  	va, PDX(va), PTX(va), *pgdir, KADDR(PTE_ADDR(*pgdir_entryp)));
+	// printk("pgdir_entry, pt_entry: %08X %08X\n", pgdir_entryp, (Pte *)(KADDR(PTE_ADDR(*pgdir_entryp))) + PTX(va));
 
 
 	/* Step 2: If the corresponding page table is not existent (valid) and parameter `create`
