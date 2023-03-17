@@ -20,6 +20,8 @@ struct Page {
 	// do not have valid reference count fields.
 
 	u_short pp_ref;
+	/* test */
+	int ID;
 };
 
 extern struct Page *pages;

@@ -104,16 +104,35 @@ void page_init(void) {
 	/* Exercise 2.3: Your code here. (3/4) */
 	int i = 0;
 	for (; i < PPN(PADDR(freemem)); ++i) {
-		pa2page(i)->pp_ref = 1;
+		pages[i].pp_ref = 1;
 	}
+
+	// struct Page *pp = pages;
+	// for (; pp < pa2page(freemem); pp++)
 	
 
 	/* Step 4: Mark the other memory as free. */
 	/* Exercise 2.3: Your code here. (4/4) */
 	for (; i < npage; ++i) {
-		pa2page(i)->pp_ref = 0;
+		pages[i].pp_ref = 0;
 		LIST_INSERT_HEAD(&page_free_list, pages + i, pp_link);
 	}
+
+	/* test */
+	// i = 0;
+	// for (; i < npage; ++i) {
+	// 	pages[i].ID = i;
+	// 	printk("%d %d\n", i, pages[i].ID);
+	// }
+	// i = 0;
+	// for (; i < npage; ++i) {
+	// 	printk("$ID_fake $ID_real :%d %d\n", (pa2page(i)->ID), (pages[i].ID));
+	// }
+
+	// struct Page *pp;
+	// LIST_FOREACH(pp, &page_free_list, pp_link) {
+	// 	printk("$%d:%d\t", page2ppn(pp), pp->pp_ref);
+	// }
 }
 
 /* Overview:
@@ -145,6 +164,7 @@ int page_alloc(struct Page **new) {
 	/* Exercise 2.4: Your code here. (2/2) */
 
 	memset((void *)page2kva(pp), 0, BY2PG);
+
 	*new = pp;
 	return 0;
 }

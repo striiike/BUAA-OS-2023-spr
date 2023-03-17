@@ -138,6 +138,10 @@ void mips_init() {
 	page_init();
 	printk("paged\n");
 
+	
+
+
+
 	page_check();
 	page_strong_check();
 	halt();
