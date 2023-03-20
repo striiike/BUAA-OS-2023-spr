@@ -1,4 +1,7 @@
 #include <types.h>
+#include <trap.h>
+#include <printk.h>
+#include <print.h>
 
 void *memcpy(void *dst, const void *src, size_t n) {
 	void *dstaddr = dst;
@@ -95,3 +98,39 @@ int strcmp(const char *p, const char *q) {
 
 	return 0;
 }
+
+void outputkk(void *data, const char *buf, size_t len);
+
+int sprintf(char *buf, const char *fmt, ...) {
+
+	char str[10000];
+	memset(str, 0, sizeof(str));
+	va_list ap;
+	va_start(ap, fmt);
+	vprintfmt(outputkk, str, fmt, ap);
+	va_end(ap);
+	strcpy(buf, str);
+	return strlen(str);
+
+
+
+	
+}
+
+void outputkk(void *data, const char *buf, size_t len) {
+	
+	char *ptr = (char *)data;
+
+	int size = strlen (ptr);
+	ptr += size;
+	for (int i = 0; i < len ; i++) {
+		
+		*ptr = buf[i];
+		ptr++;
+	//	printk("!:%c %c\n", buf[i], *(ptr - 1));
+
+	}
+
+	
+}
+
