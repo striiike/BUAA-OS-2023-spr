@@ -11,13 +11,18 @@
 #include <generated/init_override.h>
 #else
 
+extern void test_mips(int hello);
+
 void mips_init() {
+
+	test_mips(0x87654321);
+
 	printk("init.c:\tmips_init() is called\n");
 
 	// lab2:
 	mips_detect_memory();
-	// mips_vm_init();
-	// page_init();
+	mips_vm_init();
+	page_init();
 
 	// lab3:
 	// env_init();

@@ -8,7 +8,7 @@ INCLUDES    := -I../include/
 
 .PHONY: all clean
 
-all: start.o init.o
+all: start.o init.o test.o
 
 clean:
 	rm -rf *.o *~
