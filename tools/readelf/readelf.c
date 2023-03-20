@@ -12,9 +12,11 @@
  */
 int is_elf_format(const void *binary, size_t size) {
 	Elf32_Ehdr *ehdr = (Elf32_Ehdr *)binary;
-	return size >= sizeof(Elf32_Ehdr) && ehdr->e_ident[EI_MAG0] == ELFMAG0 &&
-	       ehdr->e_ident[EI_MAG1] == ELFMAG1 && ehdr->e_ident[EI_MAG2] == ELFMAG2 &&
-	       ehdr->e_ident[EI_MAG3] == ELFMAG3;
+	return size >= sizeof(Elf32_Ehdr) 
+				&& ehdr->e_ident[EI_MAG0] == ELFMAG0 
+				&& ehdr->e_ident[EI_MAG1] == ELFMAG1 
+				&& ehdr->e_ident[EI_MAG2] == ELFMAG2 
+				&& ehdr->e_ident[EI_MAG3] == ELFMAG3;
 }
 
 /* Overview:
@@ -27,6 +29,8 @@ int is_elf_format(const void *binary, size_t size) {
  *   Return 0 if success. Otherwise return < 0.
  *   If success, output the address of every section in ELF.
  */
+uint16_t reverse_16(uint16_t );
+uint32_t reverse_32(uint32_t );
 
 int readelf(const void *binary, size_t size) {
 	Elf32_Ehdr *ehdr = (Elf32_Ehdr *)binary;
@@ -37,19 +41,14 @@ int readelf(const void *binary, size_t size) {
 		return -1;
 	}
 
+	int isEB = ((uint8_t *)binary)[5] != 1;
+
 	// Get the address of the section table, the number of section headers and the size of a
 	// section header.
 
-	const void *sh_table = binary + ehdr->e_shoff;
-	Elf32_Half sh_entry_count = ehdr->e_shnum;
-	Elf32_Half sh_entry_size = ehdr->e_shentsize;
-
-	/* test program segment */
-	// const void *ph_table = binary + ehdr->e_phoff;
-	// Elf32_Half ph_entry_count = ehdr->e_phnum;
-	// Elf32_Half ph_entry_size = ehdr->e_phentsize;
-
-
+	const void *sh_table = binary + (isEB ? reverse_32(ehdr->e_shoff) : ehdr->e_shoff);
+	Elf32_Half sh_entry_count = isEB ? reverse_16(ehdr->e_shnum) : ehdr->e_shnum;
+	Elf32_Half sh_entry_size = isEB ? reverse_16(ehdr->e_shentsize) : ehdr->e_shentsize;
 	/* Exercise 1.1: Your code here. (1/2) */
 
 	// For each section header, output its index and the section address.
@@ -60,24 +59,33 @@ int readelf(const void *binary, size_t size) {
 		/* Exercise 1.1: Your code here. (2/2) */
 
 		shdr = (Elf32_Shdr *)(sh_table + i * sh_entry_size);
-		addr = shdr->sh_addr/* + shdr->sh_offset*/;
+		addr = isEB ? reverse_32(shdr->sh_addr) : shdr->sh_addr/* + shdr->sh_offset*/;
 
 		printf("%d:0x%x\n", i, addr);
 	}
 
-
-
-	// printf("test program: \n");
-	// for (int i = 0; i < ph_entry_count; i++) {
-	// 	const Elf32_Phdr *phdr;
-	// 	unsigned int addr;
-	// 	/* Exercise 1.1: Your code here. (2/2) */
-
-	// 	phdr = (Elf32_Phdr *)(ph_table + i * ph_entry_size);
-	// 	addr = phdr->p_vaddr/* + shdr->sh_offset*/;
-
-	// 	printf("%d:0x%x\n", i, addr);
-	// }
-
 	return 0;
+}
+
+
+uint32_t reverse_32(uint32_t str) {
+	uint8_t *c = &str;
+	c[0] ^= c[3];
+	c[3] ^= c[0];
+	c[0] ^= c[3];
+
+	c[1] ^= c[2];
+	c[2] ^= c[1];
+	c[1] ^= c[2];
+
+	return str;
+}
+
+uint16_t reverse_16(uint16_t str) {
+	uint8_t *c = &str;
+	c[1] ^= c[0];
+	c[0] ^= c[1];
+	c[1] ^= c[0];
+
+	return str;
 }
