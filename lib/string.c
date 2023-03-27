@@ -103,14 +103,15 @@ void outputkk(void *data, const char *buf, size_t len);
 
 int sprintf(char *buf, const char *fmt, ...) {
 
-	char str[10000];
-	memset(str, 0, sizeof(str));
+	// char str[10000];
+	// memset(str, 0, sizeof(str));
 	va_list ap;
 	va_start(ap, fmt);
-	vprintfmt(outputkk, str, fmt, ap);
+	*buf = 0;
+	vprintfmt(outputkk, buf, fmt, ap);
 	va_end(ap);
-	strcpy(buf, str);
-	return strlen(str);
+	// strcpy(buf, str);
+	return strlen(buf);
 
 
 
@@ -121,15 +122,15 @@ void outputkk(void *data, const char *buf, size_t len) {
 	
 	char *ptr = (char *)data;
 
-	int size = strlen (ptr);
+	int size = strlen(ptr);
 	ptr += size;
 	for (int i = 0; i < len ; i++) {
 		
 		*ptr = buf[i];
 		ptr++;
 	//	printk("!:%c %c\n", buf[i], *(ptr - 1));
-
 	}
+	*ptr++ = 0;
 
 	
 }

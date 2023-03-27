@@ -1,6 +1,6 @@
 void sprintf_1_check() {
 	char str[100];
-	sprintf(str, "%d\n", 12321);
+	sprintf(str, "%d\n", 12987321);
 	printk("%s", str);
 	sprintf(str, "%c\n", 97);
 	printk("%s", str);
