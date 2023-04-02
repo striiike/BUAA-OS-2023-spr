@@ -4,6 +4,7 @@
 #include <pmap.h>
 #include <printk.h>
 #include <error.h>
+#include <debugk.h>
 
 /* These variables are set by mips_detect_memory() */
 static u_long memsize; /* Maximum physical address */
@@ -64,6 +65,8 @@ void *alloc(u_int n, u_int align, int clear) {
 		memset((void *)alloced_mem, 0, n);
 	}
 
+	// DEBUGK("freemem: %x\n", freemem);
+
 	/* Step 5: return allocated chunk. */
 	return (void *)alloced_mem;
 }
@@ -103,6 +106,7 @@ void page_init(void) {
 	/* Step 3: Mark all memory below `freemem` as used (set `pp_ref` to 1) */
 	/* Exercise 2.3: Your code here. (3/4) */
 	int i = 0;
+	
 	for (; i < PPN(PADDR(freemem)); ++i) {
 		pages[i].pp_ref = 1;
 	}
@@ -113,6 +117,7 @@ void page_init(void) {
 
 	/* Step 4: Mark the other memory as free. */
 	/* Exercise 2.3: Your code here. (4/4) */
+	
 	for (; i < npage; ++i) {
 		pages[i].pp_ref = 0;
 		LIST_INSERT_HEAD(&page_free_list, pages + i, pp_link);
@@ -222,14 +227,11 @@ static int pgdir_walk(Pde *pgdir, u_long va, int create, Pte **ppte) {
 
 	if ((*pgdir_entryp & PTE_V) == 0) {
 		if (create) {
-			int ret;
-			if ((ret = page_alloc(&pp)) == 0) {
-				*pgdir_entryp = page2pa(pp);
-				*pgdir_entryp |= PTE_D | PTE_V;
-				pp->pp_ref++;
-			} else {
-				return ret;
-			}
+			try(page_alloc(&pp));
+
+			*pgdir_entryp = page2pa(pp) | PTE_D | PTE_V;
+			pp->pp_ref++;
+
 		} else {
 			*ppte = NULL;
 			return 0;
@@ -282,10 +284,7 @@ int page_insert(Pde *pgdir, u_int asid, struct Page *pp, u_long va, u_int perm) 
 	/* If failed to create, return the error. */
 	/* Exercise 2.7: Your code here. (2/3) */
 
-	int ret;
-	if ((ret = pgdir_walk(pgdir, va, 1, &pte)) != 0) {
-		return ret;
-	}
+	try(pgdir_walk(pgdir, va, 1, &pte));
 
 	/* Step 4: Insert the page to the page table entry with 'perm | PTE_V' and increase its
 	 * 'pp_ref'. */
@@ -298,11 +297,12 @@ int page_insert(Pde *pgdir, u_int asid, struct Page *pp, u_long va, u_int perm) 
 	return 0;
 }
 
-/*Overview:
-    Look up the Page that virtual address `va` map to.
-  Post-Condition:
-    Return a pointer to corresponding Page, and store it's page table entry to *ppte.
-    If `va` doesn't mapped to any Page, return NULL.*/
+/* Overview:
+ *   Look up the Page that virtual address `va` map to.
+ * Post-Condition:
+ *   Return a pointer to corresponding Page, and store it's page table entry to *ppte.
+ *   If `va` doesn't mapped to any Page, return NULL.
+ */
 struct Page *page_lookup(Pde *pgdir, u_long va, Pte **ppte) {
 	struct Page *pp;
 	Pte *pte;
@@ -379,10 +379,15 @@ void physical_memory_manage_check(void) {
 	assert(page_alloc(&pp0) == 0);
 	assert(page_alloc(&pp1) == 0);
 	assert(page_alloc(&pp2) == 0);
+	
 
 	assert(pp0);
 	assert(pp1 && pp1 != pp0);
 	assert(pp2 && pp2 != pp1 && pp2 != pp0);
+
+	DEBUGK("three pages alloc success!!\n");
+
+	
 
 	// temporarily steal the rest of the free pages
 	fl = page_free_list;
@@ -560,6 +565,7 @@ void page_check(void) {
 	page_free(pp0);
 	page_free(pp1);
 	page_free(pp2);
-
+	
+	DEBUGK("%x %x\n", (boot_pgdir), (pages));
 	printk("page_check() succeeded!\n");
 }

@@ -144,5 +144,8 @@ void mips_init() {
 
 	page_check();
 	page_strong_check();
+
+
+	
 	halt();
 }

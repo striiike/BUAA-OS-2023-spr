@@ -1,5 +1,6 @@
 #include <elf.h>
 #include <pmap.h>
+#include <debugk.h>
 
 const Elf32_Ehdr *elf_from(const void *binary, size_t size) {
 	const Elf32_Ehdr *ehdr = (const Elf32_Ehdr *)binary;
