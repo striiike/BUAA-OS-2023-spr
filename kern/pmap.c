@@ -222,14 +222,11 @@ static int pgdir_walk(Pde *pgdir, u_long va, int create, Pte **ppte) {
 
 	if ((*pgdir_entryp & PTE_V) == 0) {
 		if (create) {
-			int ret;
-			if ((ret = page_alloc(&pp)) == 0) {
-				*pgdir_entryp = page2pa(pp);
-				*pgdir_entryp |= PTE_D | PTE_V;
-				pp->pp_ref++;
-			} else {
-				return ret;
-			}
+			try(page_alloc(&pp));
+
+			*pgdir_entryp = page2pa(pp) | PTE_D | PTE_V;
+			pp->pp_ref++;
+
 		} else {
 			*ppte = NULL;
 			return 0;
@@ -282,10 +279,7 @@ int page_insert(Pde *pgdir, u_int asid, struct Page *pp, u_long va, u_int perm) 
 	/* If failed to create, return the error. */
 	/* Exercise 2.7: Your code here. (2/3) */
 
-	int ret;
-	if ((ret = pgdir_walk(pgdir, va, 1, &pte)) != 0) {
-		return ret;
-	}
+	try(pgdir_walk(pgdir, va, 1, &pte));
 
 	/* Step 4: Insert the page to the page table entry with 'perm | PTE_V' and increase its
 	 * 'pp_ref'. */
