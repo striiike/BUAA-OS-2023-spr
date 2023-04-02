@@ -106,7 +106,6 @@ void page_init(void) {
 	/* Step 3: Mark all memory below `freemem` as used (set `pp_ref` to 1) */
 	/* Exercise 2.3: Your code here. (3/4) */
 	int i = 0;
-	
 	for (; i < PPN(PADDR(freemem)); ++i) {
 		pages[i].pp_ref = 1;
 	}
