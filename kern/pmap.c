@@ -285,7 +285,7 @@ int page_insert(Pde *pgdir, u_int asid, struct Page *pp, u_long va, u_int perm) 
 	 * 'pp_ref'. */
 	/* Exercise 2.7: Your code here. (3/3) */
 
-	*pte = page2pa(pp) | perm | PTE_V;
+	*pte = page2pa(pp) | perm ;
 	pp->pp_ref++;
 
 
@@ -334,10 +334,13 @@ u_int page_perm_stat(Pde *pgdir, struct Page *pp, u_int perm_mask) {
 				Pte *pt_entryp = (Pte *)KADDR(PTE_ADDR(*pgdir_entryp)) + j;
 				if (pt_entryp && (*pt_entryp & PTE_V)){
 
+				//	 printk("!!\n");
+				//	 printk("%d %d\n", PTE_ADDR(*pt_entryp), page2pa(pp));
 					int flag = 1;
 					u_int perm = ((*pt_entryp & 0xfff) >> 8) << 8;
 					u_int mask = (perm_mask >> 8) << 8;
 
+				//	 printk("%x %x\n", perm, mask);
 					if (PTE_ADDR(*pt_entryp) != page2pa(pp)){
 						flag=0;
 					}
