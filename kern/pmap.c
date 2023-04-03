@@ -350,6 +350,9 @@ u_int page_perm_stat(Pde *pgdir, struct Page *pp, u_int perm_mask) {
 					if (mask & PTE_V && !(perm & PTE_V)){ flag=0; }
 					if (mask & PTE_N && !(perm & PTE_N)){flag=0;}
 
+					for (int k = 0; k < 11; k++) {
+						if (mask & (1<<k) && !(perm & (1 <<k))){flag=0;}
+					}
 					tot += (flag == 1) && perm & PTE_V;
 
 				}
