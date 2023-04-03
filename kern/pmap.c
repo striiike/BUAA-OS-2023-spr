@@ -319,6 +319,48 @@ struct Page *page_lookup(Pde *pgdir, u_long va, Pte **ppte) {
 	return pp;
 }
 
+
+//////////////////////////////////////////////////
+u_int page_perm_stat(Pde *pgdir, struct Page *pp, u_int perm_mask) {
+
+	int tot = 0;
+	Pde *pgdir_entryp;
+	for (int i = 0; i < 1024; i++) {
+		pgdir_entryp = pgdir + i;
+		
+		if (pgdir_entryp && (*pgdir_entryp & PTE_V)) {
+			for (int j = 0; j < 1024; j++) {
+
+				Pte *pt_entryp = (Pte *)KADDR(PTE_ADDR(*pgdir_entryp)) + j;
+				if (pt_entryp && (*pt_entryp & PTE_V)){
+
+					int flag = 1;
+					u_int perm = ((*pt_entryp & 0xfff) >> 8) << 8;
+					u_int mask = (perm_mask >> 8) << 8;
+
+					if (PTE_ADDR(*pt_entryp) != page2pa(pp)){
+						flag=0;
+					}
+					if (mask & PTE_D && !(perm & PTE_D)){ flag=0; }
+					if (mask & PTE_G && !(perm & PTE_G)){ flag=0; }
+					if (mask & PTE_V && !(perm & PTE_V)){ flag=0; }
+
+
+					tot += (flag == 1);
+
+				}
+			}
+		}
+	}
+	return tot;
+						
+	
+
+
+}
+
+
+
 /* Overview:
  *   Decrease the 'pp_ref' value of Page 'pp'.
  *   When there's no references (mapped virtual address) to this page, release it.
@@ -331,6 +373,7 @@ void page_decref(struct Page *pp) {
 		page_free(pp);
 	}
 }
+
 
 // Overview:
 //   Unmap the physical page at virtual address 'va'.
