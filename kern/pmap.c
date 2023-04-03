@@ -285,7 +285,7 @@ int page_insert(Pde *pgdir, u_int asid, struct Page *pp, u_long va, u_int perm) 
 	 * 'pp_ref'. */
 	/* Exercise 2.7: Your code here. (3/3) */
 
-	*pte = page2pa(pp) | perm ;
+	*pte = page2pa(pp) | perm | PTE_V;
 	pp->pp_ref++;
 
 
@@ -330,26 +330,27 @@ u_int page_perm_stat(Pde *pgdir, struct Page *pp, u_int perm_mask) {
 		
 		if (pgdir_entryp && (*pgdir_entryp & PTE_V)) {
 			for (int j = 0; j < 1024; j++) {
-
-				Pte *pt_entryp = (Pte *)KADDR(PTE_ADDR(*pgdir_entryp)) + j;
+				Pte *pt_entryp = (Pte *)(KADDR(PTE_ADDR(*pgdir_entryp))) + j;
 				if (pt_entryp && (*pt_entryp & PTE_V)){
 
-				//	 printk("!!\n");
-				//	 printk("%d %d\n", PTE_ADDR(*pt_entryp), page2pa(pp));
+					// printk("!!\n");
+					// printk("%d %d\n", PTE_ADDR(*pt_entryp), page2pa(pp));
 					int flag = 1;
 					u_int perm = ((*pt_entryp & 0xfff) >> 8) << 8;
 					u_int mask = (perm_mask >> 8) << 8;
 
-				//	 printk("%x %x\n", perm, mask);
+					// printk("%x %x\n", perm, mask);
 					if (PTE_ADDR(*pt_entryp) != page2pa(pp)){
 						flag=0;
 					}
+					// printk("%x %x\n", mask & PTE_D, perm & PTE_D);
+					
 					if (mask & PTE_D && !(perm & PTE_D)){ flag=0; }
 					if (mask & PTE_G && !(perm & PTE_G)){ flag=0; }
 					if (mask & PTE_V && !(perm & PTE_V)){ flag=0; }
 
 
-					tot += (flag == 1);
+					tot += (flag == 1) && perm & PTE_V;
 
 				}
 			}
