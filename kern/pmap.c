@@ -328,10 +328,10 @@ u_int page_perm_stat(Pde *pgdir, struct Page *pp, u_int perm_mask) {
 	for (int i = 0; i < 1024; i++) {
 		pgdir_entryp = pgdir + i;
 		
-		if (pgdir_entryp && (*pgdir_entryp & PTE_V)) {
+		if ((*pgdir_entryp & PTE_V)) {
 			for (int j = 0; j < 1024; j++) {
 				Pte *pt_entryp = (Pte *)(KADDR(PTE_ADDR(*pgdir_entryp))) + j;
-				if (pt_entryp && (*pt_entryp )){
+				if ( (*pt_entryp & PTE_V)){
 
 					// printk("!!\n");
 					// printk("%d %d\n", PTE_ADDR(*pt_entryp), page2pa(pp));
