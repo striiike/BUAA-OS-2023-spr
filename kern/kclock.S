@@ -20,7 +20,7 @@ LEAF(kclock_init)
 
 	// KSEG1 | DEV_RTC_ADDRESS | DEV_RTC_HZ
 	// 0xA0000000U | 0x15000000 | 0x0100
-	sw		t0, 0xB5000100
+	// sw		t0, 0xB5000100
 	sw 		t0, KSEG1 | DEV_RTC_ADDRESS | DEV_RTC_HZ
 	jr      ra
 END(kclock_init)

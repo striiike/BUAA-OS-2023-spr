@@ -79,7 +79,7 @@ static void map_segment(Pde *pgdir, u_int asid, u_long pa, u_long va, u_int size
 		 *  Use 'pa2page' to get the 'struct Page *' of the physical address.
 		 */
 		/* Exercise 3.2: Your code here. */
-		page_insert(base_pgdir, asid, pa2page(pa + i), va + i, perm);
+		page_insert(pgdir, asid, pa2page(pa + i), va + i, perm);
 
 	}
 }
@@ -251,7 +251,7 @@ int env_alloc(struct Env **new, u_int parent_id) {
 	/* Step 2: Call a 'env_setup_vm' to initialize the user address space for this new Env. */
 	/* Exercise 3.4: Your code here. (2/4) */
 
-	env_setup_vm(e);
+	try(env_setup_vm(e));
 	
 
 	/* Step 3: Initialize these fields for the new Env with appropriate values:
@@ -306,7 +306,7 @@ static int load_icode_mapper(void *data, u_long va, size_t offset, u_int perm, c
 	/* Step 1: Allocate a page with 'page_alloc'. */
 	/* Exercise 3.5: Your code here. (1/2) */
 
-	page_alloc(&p);
+	try(page_alloc(&p));
 
 	/* Step 2: If 'src' is not NULL, copy the 'len' bytes started at 'src' into 'offset' at this
 	 * page. */
