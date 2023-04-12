@@ -42,14 +42,14 @@ void schedule(int yield) {
 		if (e != NULL && e->env_status == ENV_RUNNABLE) {
 			TAILQ_INSERT_TAIL(&env_sched_list, e, env_sched_link);
 		}
-
+		if (e) {
+		}
 		if (TAILQ_EMPTY(&env_sched_list)) {
-			panic("!! no runnable envs !!\n");
+			panic("!! NO RUNNABLE ENVS !!\n");
 		}
 		e = TAILQ_FIRST(&env_sched_list);
 		count = e->env_pri;
-		TAILQ_REMOVE(&env_sched_list, e, env_sched_link);
-		
+		// TAILQ_REMOVE(&env_sched_list, e, env_sched_link);		
 	} 
 
 	count--;

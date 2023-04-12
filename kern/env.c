@@ -98,7 +98,7 @@ u_int mkenvid(struct Env *e) {
 	return ((++i) << (1 + LOG2NENV)) | (e - envs);
 }
 
-/* Overview:
+/* Ov-erview:
  *   Convert an existing 'envid' to an 'struct Env *'.
  *   If 'envid' is 0, set '*penv = curenv', otherwise set '*penv = &envs[ENVX(envid)]'.
  *   In addition, if 'checkperm' is non-zero, the requested env must be either 'curenv' or its
@@ -121,6 +121,12 @@ int envid2env(u_int envid, struct Env **penv, int checkperm) {
 	 */
 	/* Exercise 4.3: Your code here. (1/2) */
 
+	if (envid == 0) {
+		*penv = curenv;
+		return 0;
+	}
+	e = &envs[ENVX(envid)];
+
 	if (e->env_status == ENV_FREE || e->env_id != envid) {
 		return -E_BAD_ENV;
 	}
@@ -132,6 +138,15 @@ int envid2env(u_int envid, struct Env **penv, int checkperm) {
 	 *   If violated, return '-E_BAD_ENV'.
 	 */
 	/* Exercise 4.3: Your code here. (2/2) */
+
+	if (checkperm) {
+		if (e == curenv || e->env_parent_id == curenv->env_id) {
+			// Do nothing.
+		} else {
+			// return -114514;
+			return -E_BAD_ENV;
+		}
+	}
 
 	/* Step 3: Assign 'e' to '*penv'. */
 	*penv = e;
