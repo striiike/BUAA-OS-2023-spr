@@ -175,7 +175,7 @@ void env_init(void) {
 
 	/* Exercise 3.1: Your code here. (2/2) */
 
-	for (int i = NENV - 1; i >= 0; i--) {
+	for (i = NENV - 1; i >= 0; i--) {
 		envs[i].env_status = ENV_FREE;
 		LIST_INSERT_HEAD(&env_free_list, envs + i, env_link);
 	}
@@ -282,7 +282,7 @@ int env_alloc(struct Env **new, u_int parent_id) {
 	/* Exercise 3.4: Your code here. (3/4) */
 
 	e->env_id = mkenvid(e);
-	asid_alloc(&(e->env_asid));
+	try(asid_alloc(&(e->env_asid)));
 	e->env_parent_id = parent_id;
 
 	/* Step 4: Initialize the sp and 'cp0_status' in 'e->env_tf'. */
@@ -384,7 +384,7 @@ struct Env *env_create(const void *binary, size_t size, int priority) {
 	/* Step 1: Use 'env_alloc' to alloc a new env. */
 	/* Exercise 3.7: Your code here. (1/3) */
 
-	env_alloc(&e, 0);
+	panic_on(env_alloc(&e, 0));
 
 	/* Step 2: Assign the 'priority' to 'e' and mark its 'env_status' as runnable. */
 	/* Exercise 3.7: Your code here. (2/3) */

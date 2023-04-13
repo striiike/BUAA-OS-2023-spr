@@ -9,6 +9,7 @@ static void passive_alloc(u_int va, Pde *pgdir, u_int asid) {
 	}
 
 	if (va >= USTACKTOP && va < USTACKTOP + BY2PG) {
+		panic("invalid memory %x", va);
 		panic("invalid memory");
 	}
 
@@ -74,8 +75,10 @@ void do_tlb_mod(struct Trapframe *tf) {
 	if (curenv->env_user_tlb_mod_entry) {
 		tf->regs[4] = tf->regs[29];
 		tf->regs[29] -= sizeof(tf->regs[4]);
-		// Hint: Set 'cp0_epc' in the context 'tf' to 'curenv->env_user_tlb_mod_entry'.
+		// Hint: Set 'cp0_epc' in the context 'tf' to 'curenv->env_user_tlb_mod_entry'. sb Yip coejkan
 		/* Exercise 4.11: Your code here. */
+
+		tf->cp0_epc = curenv->env_user_tlb_mod_entry;
 
 	} else {
 		panic("TLB Mod but no user handler registered");
