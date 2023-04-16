@@ -459,11 +459,10 @@ int sys_ipc_try_send(u_int envid, u_int value, u_int srcva, u_int perm) {
 	/* Return -E_INVAL if 'srcva' is not zero and not mapped in 'curenv'. */
 	if (srcva != 0) {
 		/* Exercise 4.8: Your code here. (8/8) */
-
-		if ((p = page_lookup(curenv->env_pgdir, srcva, NULL) == NULL)) {
+		if (is_illegal_va(e->env_ipc_dstva) ) {
 			return -E_INVAL;
 		}
-		if (is_illegal_va(e->env_ipc_dstva)) {
+		if ((p = page_lookup(curenv->env_pgdir, srcva, NULL)) == NULL) {
 			return -E_INVAL;
 		}
 		try(page_insert(e->env_pgdir, e->env_asid, p, e->env_ipc_dstva, perm));
