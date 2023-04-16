@@ -463,8 +463,13 @@ int sys_ipc_try_send(u_int envid, u_int value, u_int srcva, u_int perm) {
 		if ((p = page_lookup(curenv->env_pgdir, srcva, NULL) == NULL)) {
 			return -E_INVAL;
 		}
-		sys_mem_map(curenv->env_id, srcva, envid, e->env_ipc_dstva, perm);
+		if (is_illegal_va(e->env_ipc_dstva)) {
+			return -E_INVAL;
+		}
+		try(page_insert(e->env_pgdir, e->env_asid, p, e->env_ipc_dstva, perm));
+		// sys_mem_map(curenv->env_id, srcva, envid, e->env_ipc_dstva, perm);
 
+		
 	}
 	// printk("send success!, %x\n", curenv->env_id);
 	return 0;

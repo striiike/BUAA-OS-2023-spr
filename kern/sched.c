@@ -40,10 +40,10 @@ void schedule(int yield) {
 		|| e->env_status == ENV_NOT_RUNNABLE) {
 		
 		if (e) {
-				
+			TAILQ_REMOVE(&env_sched_list, e, env_sched_link);
 		}
 		if (e != NULL && e->env_status == ENV_RUNNABLE) {
-			TAILQ_REMOVE(&env_sched_list, e, env_sched_link);
+			
 			TAILQ_INSERT_TAIL(&env_sched_list, e, env_sched_link);
 		}
 		if (e) {
