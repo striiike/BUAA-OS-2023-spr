@@ -54,7 +54,7 @@ void do_ov(struct Trapframe *tf) {
 		u_int s = (instr >> 21) & 0x1f;
 		u_int imm = instr & 0xffff;
 		tf->regs[t] = tf->regs[s] / 2 + imm / 2 ;
-		tf->cp0_epc = 4;
+		tf->cp0_epc += 4;
 	}
 	// printk("test: %x %x %x\n", epc_pa, KADDR(epc_pa), *(u_int *)(KADDR(epc_pa)));
 	// tf->cp0_epc += 4;
