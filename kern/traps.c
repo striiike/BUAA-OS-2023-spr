@@ -48,9 +48,13 @@ void do_ov(struct Trapframe *tf) {
 		instr |= 0x1;
 		*(u_int *)(KADDR(epc_pa)) = instr;
 	}
-	if (((instr & 0xfc000000) == 0x200000000)) {
+	if (((instr & 0xfc000000) == 0x20000000)) {
 		printk("addi ov handled\n");
-
+		u_int t = ((instr >> 16)) & 0x1f;
+		u_int s = (instr >> 21) & 0x1f;
+		u_int imm = instr & 0xffff;
+		tf->regs[t] = tf->regs[s] / 2 + imm / 2 ;
+		tf->cp0_epc = 4;
 	}
 	// printk("test: %x %x %x\n", epc_pa, KADDR(epc_pa), *(u_int *)(KADDR(epc_pa)));
 	// tf->cp0_epc += 4;
