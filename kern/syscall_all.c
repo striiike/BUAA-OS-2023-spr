@@ -5,9 +5,8 @@
 #include <printk.h>
 #include <sched.h>
 #include <syscall.h>
-
 extern struct Env *curenv;
-
+extern struct Env envs[NENV];
 /* Overview:
  * 	This function is used to print a character on screen.
  *
@@ -535,7 +534,8 @@ void sys_set_gid(u_int gid) {
 	curenv->env_gid = gid;
 }
 
-int sys_ipc_try_group_send(u_int whom, u_int value, u_int srcva, u_int perm) {
+u_int queue[20] = {0};
+int sys_ipc_try_broadcast(u_int value, u_int srcva, u_int perm) {
 	struct Env *e;
 	struct Page *p;
 
@@ -545,18 +545,36 @@ int sys_ipc_try_group_send(u_int whom, u_int value, u_int srcva, u_int perm) {
 	if (srcva != 0 && is_illegal_va(srcva)) {
 		return -E_INVAL;
 	}
-
+	
 	/* Step 2: Convert 'envid' to 'struct Env *e'. */
 	/* This is the only syscall where the 'envid2env' should be used with 'checkperm' UNSET,
 	 * because the target env is not restricted to 'curenv''s children. */
 	/* Exercise 4.8: Your code here. (5/8) */
 
-	try(envid2env(whom, &e, 0));
+	memset(queue, 0, sizeof(queue));
+	int head = 0, tail = 1;
+	queue[0] = curenv->env_id;
+	// printk("%x %x\n", queue[0], ENVX(queue[0]));
+	while (head < tail) {
+		u_int first = queue[head++];
+		// printk("first : %x\n", first);
+		for (int i = 0; i < 1000; i++) {
+			// printk("it is %x\n", envs[i].env_id);	
+			if (envs[i].env_parent_id == first) {
+				// printk("son : %x\n", envs[i].env_id);
+				if (envs[i].env_ipc_recving == 0) {
+					return -E_IPC_NOT_RECV;
+				}
+				queue[tail++] = envs[i].env_id;
+			}
+		}
+	}
+	
 
 
         /* Step 3: Check if the target is waiting for a message. */
         /* Exercise 4.8: Your code here. (6/8) */
-
+	/*
         if (e->env_ipc_recving == 0) {
                 return -E_IPC_NOT_RECV;
         }
@@ -564,8 +582,21 @@ int sys_ipc_try_group_send(u_int whom, u_int value, u_int srcva, u_int perm) {
 	if (curenv->env_gid != e->env_gid) {
 		return -E_IPC_NOT_GROUP;
 	}
-
+	*/
         /* Step 4: Set the target's ipc fields. */
+
+        memset(queue, 0, sizeof(queue));
+        head = 0; tail = 1;
+        queue[0] = curenv->env_id;
+        while (head < tail) {
+                u_int first = queue[head++];
+                for (int i = 0; i < 50; i++) {
+                        if (envs[i].env_parent_id == first) {
+					
+				queue[tail++] = envs[i].env_id;
+				// printk("s o n : %x\n", envs[i].env_id);
+				e = envs + i;
+
         e->env_ipc_value = value;
         e->env_ipc_from = curenv->env_id;
         e->env_ipc_perm = PTE_V | perm;
@@ -594,8 +625,44 @@ int sys_ipc_try_group_send(u_int whom, u_int value, u_int srcva, u_int perm) {
 
                 
         }
+
+
+			}
+                }
+        }
+	/*
+        e->env_ipc_value = value;
+        e->env_ipc_from = curenv->env_id;
+        e->env_ipc_perm = PTE_V | perm;
+        e->env_ipc_recving = 0;
+
+        /* Step 5: Set the target's status to 'ENV_RUNNABLE' again and insert it to the tail of
+         * 'env_sched_list'. */
+        /* Exercise 4.8: Your code here. (7/8) */
+/*
+        e->env_status = ENV_RUNNABLE;
+        TAILQ_INSERT_TAIL(&env_sched_list, e, env_sched_link);
+
+        /* Step 6: If 'srcva' is not zero, map the page at 'srcva' in 'curenv' to 'e->env_ipc_dstva'
+         * in 'e'. */
+        /* Return -E_INVAL if 'srcva' is not zero and not mapped in 'curenv'. */
+       /*
+	if (srcva != 0) {
+                /* Exercise 4.8: Your code here. (8/8) */
+         /*       if (is_illegal_va(e->env_ipc_dstva) ) {
+                        return -E_INVAL;
+                }
+                if ((p = page_lookup(curenv->env_pgdir, srcva, NULL)) == NULL) {
+                        return -E_INVAL;
+                }
+                try(page_insert(e->env_pgdir, e->env_asid, p, e->env_ipc_dstva, perm));
+                // sys_mem_map(curenv->env_id, srcva, envid, e->env_ipc_dstva, perm);
+
+                
+        }
         // printk("send success!, %x\n", curenv->env_id);
-        return 0;
+        */
+	return 0;
 }
 
 
@@ -620,7 +687,7 @@ void *syscall_table[MAX_SYSNO] = {
     [SYS_write_dev] = sys_write_dev,
     [SYS_read_dev] = sys_read_dev,
     [SYS_set_gid] = sys_set_gid,
-    [SYS_ipc_try_group_send] = sys_ipc_try_group_send,
+    [SYS_ipc_try_broadcast] = sys_ipc_try_broadcast,
 };
 
 /* Overview:

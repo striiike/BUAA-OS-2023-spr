@@ -44,9 +44,9 @@ void set_gid(u_int gid) {
 }
 
 
-int ipc_group_send(u_int whom, u_int val, const void *srcva, u_int perm) {
+int ipc_broadcast(u_int val, const void *srcva, u_int perm) {
 	int r;
-	while((r = syscall_ipc_try_group_send(whom, val, srcva, perm)) != 0) {
+	while((r = syscall_ipc_try_broadcast(val, srcva, perm)) != 0) {
 		if (r == -E_IPC_NOT_RECV) syscall_yield();
 		if (r == -E_IPC_NOT_GROUP) return -E_IPC_NOT_GROUP;
 	}
