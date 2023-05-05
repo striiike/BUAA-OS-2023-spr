@@ -194,7 +194,7 @@ int make_link_block(struct File *dirf, int nblk) {
 // Overview:
 //  Allocate an unused 'struct File' under the specified directory.
 //
-//  Note that when we delete a file, we do not re-arrenge all
+//  Note that when we delete a file, we do not re-arrange all
 //  other 'File's, so we should reuse existing unused 'File's here.
 //
 // Post-Condition:
@@ -215,6 +215,12 @@ struct File *create_file(struct File *dirf) {
 		// the 'bno' at the index.
 		/* Exercise 5.5: Your code here. (1/3) */
 
+		if (i < NINDIRECT) {
+			bno = dirf->f_direct[i];
+		} else {
+			bno = ((uint32_t *) (disk[dirf->f_indirect].data))[i];
+		}
+
 		// Get the directory block using the block number.
 		struct File *blk = (struct File *)(disk[bno].data);
 
@@ -224,6 +230,10 @@ struct File *create_file(struct File *dirf) {
 			// Return a pointer to the unused 'File'.
 			/* Exercise 5.5: Your code here. (2/3) */
 
+			if (((uint8_t *) f->f_name) == NULL) {
+				return f;
+			}
+
 		}
 	}
 
@@ -231,7 +241,10 @@ struct File *create_file(struct File *dirf) {
 	// and return a pointer to the new block on 'disk'.
 	/* Exercise 5.5: Your code here. (3/3) */
 
+	return ((struct File *) (disk[make_link_block(dirf, nblk)].data));
+
 	return NULL;
+
 }
 
 // Write file to disk under specified dir.
@@ -239,7 +252,7 @@ void write_file(struct File *dirf, const char *path) {
 	int iblk = 0, r = 0, n = sizeof(disk[0].data);
 	struct File *target = create_file(dirf);
 
-	/* in case `create_file` is't filled */
+	/* in case `create_file` isn't filled */
 	if (target == NULL) {
 		return;
 	}
