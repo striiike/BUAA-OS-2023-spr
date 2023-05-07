@@ -159,3 +159,8 @@ int fork(void) {
 
 	return child;
 }
+
+
+int make_shared(void *va) {
+	return 0;
+}

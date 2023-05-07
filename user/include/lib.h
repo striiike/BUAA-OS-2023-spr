@@ -43,6 +43,8 @@ int spawn(char *prog, char **argv);
 int spawnl(char *prot, char *args, ...);
 int fork(void);
 
+int make_shared(void *va);
+
 /// syscalls
 extern int msyscall(int, ...);
 
