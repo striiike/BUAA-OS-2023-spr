@@ -280,7 +280,8 @@ int sys_exofork(void) {
 	/* Exercise 4.9: Your code here. (4/4) */
 
 	e->env_status = ENV_NOT_RUNNABLE;
-	e->env_pri = curenv->env_pri;
+	// e->env_pri = 100000000;
+	 e->env_pri = curenv->env_pri;
 	
 	return e->env_id;
 }
@@ -530,9 +531,30 @@ int sys_write_dev(u_int va, u_int pa, u_int len) {
  *
  * Hint: You MUST use 'memcpy' to copy data after checking the validity.
  */
+
+static int queue[100] = {0};
+static int length = 0;
+
 int sys_read_dev(u_int va, u_int pa, u_int len) {
 	/* Exercise 5.1: Your code here. (2/2) */
 	// printk("read\n");
+	if (pa == 2) {
+		if (length >= blockNum) return 0;
+		queue[++length] = curenv->env_id;
+		sys_set_env_status(curenv->env_id, ENV_NOT_RUNNABLE);
+
+		if (length == blockNum) {
+			for (int i = 1; i <= length; i++) {
+				sys_set_env_status(curenv->env_id, ENV_RUNNABLE);
+			}
+			return 0;
+			
+		
+		}
+		sys_yield();
+
+
+	}	
 	if (pa == 1) {
 		blockNum--;
 		return -1;
