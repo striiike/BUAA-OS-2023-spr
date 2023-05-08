@@ -51,7 +51,9 @@ void barrier_wait(void) {
 
 	int blockNum = syscall_read_dev(0, 0, 0);
 
-	if (blockNum <= 0) return;
+	if (blockNum <= 0){ 
+		syscall_yield();
+		return;}
 
 	int r;
 	while(1) {
