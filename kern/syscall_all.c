@@ -508,8 +508,13 @@ int sys_cgetc(void) {
  *	|    rtc     | 0x15000000 | 0x200  | (dev_rtc.h)
  *	* ---------------------------------*
  */
+
+
+static int blockNum = 0;
 int sys_write_dev(u_int va, u_int pa, u_int len) {
 	/* Exercise 5.1: Your code here. (1/2) */
+	
+	blockNum = len;
 
 	return 0;
 }
@@ -528,7 +533,7 @@ int sys_write_dev(u_int va, u_int pa, u_int len) {
 int sys_read_dev(u_int va, u_int pa, u_int len) {
 	/* Exercise 5.1: Your code here. (2/2) */
 
-	return 0;
+	return blockNum;
 }
 
 void *syscall_table[MAX_SYSNO] = {

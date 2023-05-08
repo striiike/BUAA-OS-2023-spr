@@ -39,20 +39,23 @@ u_int ipc_recv(u_int *whom, void *dstva, u_int *perm) {
 }
 
 
-static int blockNum = 0;
 void barrier_alloc (int n){
-	blockNum = n;
+
+	syscall_write_dev(0, 0, n);
 }	
 
 
 
+
 void barrier_wait(void) {
+
+	int blockNum = syscall_read_dev(0, 0, 0);
+
 	if (blockNum <= 0) return;
-	blockNum--;
 
 	int r;
 	while(1) {
-		if (blockNum <= 0) {break;}
+		if (syscall_read_dev(0, 0, 0) <= 0) {break;}
 	
 	}
 	syscall_yield();
