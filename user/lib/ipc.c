@@ -52,15 +52,18 @@ void barrier_alloc (int n){
 void barrier_wait(void) {
 	
 	//syscall_read_dev(0, 2, 0);
+//	if (syscall_read_dev(0,0,0) <= 0) {
+//		return;}
 
 	syscall_read_dev(0,1,0);
+	syscall_yield();
 	/*int blockNum = syscall_read_dev(0, 0, 0);
 	//block--;
 	if (blockNum <= 0 || block <= 0){ 
 		syscall_yield();
 		return;}
 	*/
-	
+		
 	while((syscall_read_dev(0, 0, 0)) > 0 ) {
 	// 	debugf("%d %d\n", r, r); 
 		syscall_yield();
