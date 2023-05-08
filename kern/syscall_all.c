@@ -510,12 +510,12 @@ int sys_cgetc(void) {
  */
 
 
-static int blockNum = 0;
+static u_int blockNum = 0;
 int sys_write_dev(u_int va, u_int pa, u_int len) {
 	/* Exercise 5.1: Your code here. (1/2) */
-	
+		
 	blockNum = len;
-
+	// printk("%d %d\n", blockNum, len);
 	return 0;
 }
 
@@ -532,7 +532,11 @@ int sys_write_dev(u_int va, u_int pa, u_int len) {
  */
 int sys_read_dev(u_int va, u_int pa, u_int len) {
 	/* Exercise 5.1: Your code here. (2/2) */
-
+	// printk("read\n");
+	if (pa == 1) {
+		blockNum--;
+		return -1;
+	}
 	return blockNum;
 }
 

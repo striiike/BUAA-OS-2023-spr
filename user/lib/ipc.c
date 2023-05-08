@@ -38,29 +38,37 @@ u_int ipc_recv(u_int *whom, void *dstva, u_int *perm) {
 	return env->env_ipc_value;
 }
 
+static int block = 0;
 
 void barrier_alloc (int n){
-
+	block = n;
 	syscall_write_dev(0, 0, n);
+	// debugf("%d %d %d\n", block, syscall_read_dev(0, 0, 0), n);
 }	
 
 
 
 
 void barrier_wait(void) {
-
+	syscall_read_dev(0,1,0);
 	int blockNum = syscall_read_dev(0, 0, 0);
-
-	if (blockNum <= 0){ 
+	//block--;
+	if (blockNum <= 0 || block <= 0){ 
 		syscall_yield();
 		return;}
 
 	int r;
-	while(1) {
-		if (syscall_read_dev(0, 0, 0) <= 0) {break;}
+	while((r = syscall_read_dev(0, 0, 0)) > 0 ) {
+	// 	debugf("%d %d\n", r, r); 
+		if (syscall_read_dev(0, 0, 0) > 0) {syscall_yield();}
 	
 	}
-	syscall_yield();
+	 /*while(block > 0 ) {
+                debugf("%d %d\n", block, block); 
+                if (block > 0) {syscall_yield();}
+        
+        }*/
+	// syscall_yield();
 }
 
 
