@@ -51,21 +51,21 @@ void barrier_alloc (int n){
 
 void barrier_wait(void) {
 	
-	syscall_read_dev(0, 2, 0);
+	//syscall_read_dev(0, 2, 0);
 
-	/*syscall_read_dev(0,1,0);
-	int blockNum = syscall_read_dev(0, 0, 0);
+	syscall_read_dev(0,1,0);
+	/*int blockNum = syscall_read_dev(0, 0, 0);
 	//block--;
 	if (blockNum <= 0 || block <= 0){ 
 		syscall_yield();
 		return;}
 	*/
-	/*int r;
+	int r;
 	while((r = syscall_read_dev(0, 0, 0)) > 0 ) {
 	// 	debugf("%d %d\n", r, r); 
 		if (r > 0) {syscall_yield();}
 	
-	}*/
+	}
 	 /*while(block > 0 ) {
                 debugf("%d %d\n", block, block); 
                 if (block > 0) {syscall_yield();}

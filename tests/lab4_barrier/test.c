@@ -4,7 +4,7 @@ int main() {
 	barrier_alloc(5);
 
 	
-	for (int i = 0; i < 20; i++) {
+	for (int i = 0; i < 5; i++) {
 		int who = fork();
 		if (who == 0) {
 			if (i > 100) continue;
