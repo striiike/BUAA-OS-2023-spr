@@ -559,21 +559,21 @@ int sys_read_dev(u_int va, u_int pa, u_int len) {
 
 	}	
 	if (pa == 1) {
-		while (flag == 1) {
+		//while (flag == 1) {
 			
-		}
-		flag = 1;
+		//}
+		//flag = 1;
 		blockNum--;
-		flag = 0;
+		//flag = 0;
 		return -1;
 	}
 
 	int temp;
-	while (flag == 1) {
-	}
-	flag = 1;
+	//while (flag == 1) {
+	//}
+	//flag = 1;
 	temp = blockNum;
-	flag = 0;
+	//flag = 0;
 	return temp;
 }
 

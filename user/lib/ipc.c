@@ -60,8 +60,8 @@ void barrier_wait(void) {
 		syscall_yield();
 		return;}
 	*/
-	int r;
-	while((r = syscall_read_dev(0, 0, 0)) > 0 ) {
+	
+	while((syscall_read_dev(0, 0, 0)) > 0 ) {
 	// 	debugf("%d %d\n", r, r); 
 		syscall_yield();
 	
