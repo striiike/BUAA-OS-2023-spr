@@ -1,10 +1,10 @@
 #include <lib.h>
 
 int main() {
-	barrier_alloc(5);
+	barrier_alloc(10);
 
 	
-	for (int i = 0; i < 5; i++) {
+	for (int i = 0; i < 10; i++) {
 		int who = fork();
 		if (who == 0) {
 			if (i > 100) continue;

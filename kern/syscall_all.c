@@ -535,6 +535,9 @@ int sys_write_dev(u_int va, u_int pa, u_int len) {
 static int queue[100] = {0};
 static int length = 0;
 
+int flag = 0;
+
+
 int sys_read_dev(u_int va, u_int pa, u_int len) {
 	/* Exercise 5.1: Your code here. (2/2) */
 	// printk("read\n");
@@ -556,9 +559,15 @@ int sys_read_dev(u_int va, u_int pa, u_int len) {
 
 	}	
 	if (pa == 1) {
+		while (flag == 1) {
+			
+		}
+		flag = 1;
 		blockNum--;
+		flag = 0;
 		return -1;
 	}
+
 	return blockNum;
 }
 
