@@ -535,7 +535,7 @@ int sys_write_dev(u_int va, u_int pa, u_int len) {
 static int queue[100] = {0};
 static int length = 0;
 
-int flag = 0;
+static int flag = 0;
 
 
 int sys_read_dev(u_int va, u_int pa, u_int len) {
@@ -568,7 +568,13 @@ int sys_read_dev(u_int va, u_int pa, u_int len) {
 		return -1;
 	}
 
-	return blockNum;
+	int temp;
+	while (flag == 1) {
+	}
+	flag = 1;
+	temp = blockNum;
+	flag = 0;
+	return temp;
 }
 
 void *syscall_table[MAX_SYSNO] = {
