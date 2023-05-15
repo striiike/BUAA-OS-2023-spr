@@ -152,6 +152,10 @@ void ssd_write(u_int logic_no, void *src) {
 
 	able[alloc] = 0;
 	debugf("write %d phy\n", alloc);
+	for (int i = 0; i < 32; i++) {
+		debugf("%d %d |", map[i], map_reverse[i]);
+	}
+	debugf("\n");
 }
 
 void ssd_erase(u_int logic_no) {
