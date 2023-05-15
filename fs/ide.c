@@ -115,7 +115,9 @@ void ssd_init() {
 	memset(map_reverse, -1, sizeof(map_reverse));
 	memset(able, 1, sizeof(able));
 	memset(erase_n, 0, sizeof(erase_n));
-
+	for (int i = 0; i < 32; i++) {
+		debugf("%d %d %d %d\n", map[i], map_reverse[i], able[i], erase_n[i]);
+	}
 }
 
 int ssd_read(u_int logic_no, void *dst) {
@@ -127,7 +129,7 @@ int ssd_read(u_int logic_no, void *dst) {
 }
 
 int find_phy() {
-	debugf("in in in\n");
+	// debugf("in in in\n");
 	for (int i = 0; i < 32; i++) {
 		if (map_reverse[i] == -1 && able[i] == 1) {
 			debugf("find %d %d %d\n", i, map_reverse[i], able[i]);
