@@ -31,6 +31,7 @@ int main() {
 	int prev = 3;
 	for (int i = 1; i <= 16; i++) {
 		ssd_write_number(3, i * 10 + 3);
+		debugf("%d\n", ssd_read_number(3));
 		if (ssd_read_number(3) != i * 10 + 3) {
 			user_panic("OVERWRITE_ERROR");
 		}
