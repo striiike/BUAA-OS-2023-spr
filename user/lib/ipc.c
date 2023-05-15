@@ -54,12 +54,12 @@ u_int get_time(u_int *us) {
 void usleep(u_int us) {
 	// 读取进程进入 usleep 函数的时间
 	u_int temp;
-	int time_in = ((int) get_time(&temp) % 100) * 1000000;
+	int time_in = ((int) get_time(&temp) % 1000) * 1000000;
 	int us_in = (int) temp;
 	// debugf("in:%d %d\n", time_in, us_in);
 	while (1) {
 		// 读取当前时间
-		int time_now = ((int) get_time(&temp) % 100) * 1000000;
+		int time_now = ((int) get_time(&temp) % 1000) * 1000000;
 		int us_now = (int) temp;
 		// debugf("now:%d %d\n", time_now, us_now);
 		if (time_now + us_now >= time_in + us_in + us) {
