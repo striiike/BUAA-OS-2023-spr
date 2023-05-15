@@ -177,14 +177,10 @@ int find_phy() {
 		able[num_new] = 1;
 
 		memset(buf, 0, sizeof(buf));
+		erase_n[num_new]++;
 		ide_write(0, num_new, buf, 1);
 		return num_new;
 	}
-
-	
-
-
-
 
 
 	return num;
