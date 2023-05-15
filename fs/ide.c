@@ -107,13 +107,13 @@ void ide_write(u_int diskno, u_int secno, void *src, u_int nsecs) {
 
 int map[50];
 int map_reverse[50];
-int bitmap[50];
+int able[50];
 int erase_n[50];
 
 void ssd_init() {
 	memset(map, -1, sizeof(map));
 	memset(map_reverse, -1, sizeof(map_reverse));
-	memset(bitmap, 1, sizeof(bitmap));
+	memset(able, 1, sizeof(able));
 	memset(erase_n, 0, sizeof(erase_n));
 
 }
@@ -128,7 +128,7 @@ int ssd_read(u_int logic_no, void *dst) {
 
 int find() {
 	for (int i = 0; i < 32; i++) {
-		if (map_reverse[i] == -1 && bitmap[i] == 1) {
+		if (map_reverse[i] == -1 && able[i] == 1) {
 			return i;
 		}	
 	}
@@ -150,7 +150,7 @@ void ssd_write(u_int logic_no, void *src) {
 
 	ide_write(0, alloc, src, 1);
 
-	bitmap[alloc] = 0;
+	able[alloc] = 0;
 }
 
 void ssd_erase(u_int logic_no) {
@@ -168,7 +168,7 @@ void ssd_erase(u_int logic_no) {
 
 		erase_n[phy_no]++;
 
-		bitmap[phy_no] = 1;
+		able[phy_no] = 1;
 	}
 
 }
