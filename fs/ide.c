@@ -150,7 +150,7 @@ int find_phy() {
 	int num_new = 321;
 	int eras_new = 114514191;
 	if (eras_min >= 5) {
-		for (int i = 0; i < 31; i++) {
+		for (int i = 0; i < 32; i++) {
 			if (able[i] == 0) {
 				if (erase_n[i] < eras_new) {
 					num_new = i;
@@ -166,7 +166,6 @@ int find_phy() {
 		char buf[512];
 		memset(buf, 0, sizeof(buf));
 		ide_read(0, num_new, buf, 1);
-
 		ide_write(0, num, buf, 1);
 		int logic = map_reverse[num_new];
 		map[logic] = num;
