@@ -47,7 +47,7 @@ u_int get_time(u_int *us) {
 
     syscall_write_dev(&time, addr + 0x0, 4);
     syscall_read_dev(&time, addr + 0x10, 4);
-	syscall_read_dev(&us, addr + 0x20, 4);
+	syscall_read_dev(us, addr + 0x20, 4);
     return time;
 }
 
