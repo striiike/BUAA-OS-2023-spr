@@ -6,7 +6,7 @@
 #include <printk.h>
 #include <sched.h>
 #include <debugk.h>
-e
+
 // The maximum number of available ASIDs.
 // Our bitmap requires this to be a multiple of 32.
 #define NASID 64
