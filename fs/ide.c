@@ -116,7 +116,7 @@ void ssd_init() {
 		map_reverse[i] = -1;
 		able[i] = 1;
 		erase_n[i] = 0;
-		debugf("%d %d %d %d\n", map[i], map_reverse[i], able[i], erase_n[i]);
+		// debugf("%d %d %d %d\n", map[i], map_reverse[i], able[i], erase_n[i]);
 	}
 }
 
@@ -132,7 +132,7 @@ int find_phy() {
 	// debugf("in in in\n");
 	for (int i = 0; i < 32; i++) {
 		if (map_reverse[i] == -1 && able[i] == 1) {
-			debugf("find %d %d %d\n", i, map_reverse[i], able[i]);
+			// debugf("find %d %d %d\n", i, map_reverse[i], able[i]);
 			return i;
 		}	
 	}
@@ -157,10 +157,10 @@ void ssd_write(u_int logic_no, void *src) {
 
 	able[alloc] = 0;
 	debugf("write %d phy\n", alloc);
-	for (int i = 0; i < 32; i++) {
-		debugf("%d %d |", map[i], map_reverse[i]);
-	}
-	debugf("\n");
+	// for (int i = 0; i < 32; i++) {
+	// 	debugf("%d %d |", map[i], map_reverse[i]);
+	// }
+	// debugf("\n");
 }
 
 void ssd_erase(u_int logic_no) {
@@ -174,7 +174,14 @@ void ssd_erase(u_int logic_no) {
 
 		char tmp[512];
 		memset(tmp, 0, sizeof(tmp));
+		
+		debugf("erase %d phy\n", phy_no);
 		ide_write(0, phy_no, tmp, 1);
+
+		// char test[512];
+		// memset(test, 0, sizeof(test));
+		// ide_write(0, phy_no, test, 1);
+		
 
 		erase_n[phy_no]++;
 
