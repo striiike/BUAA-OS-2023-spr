@@ -146,6 +146,47 @@ int find_phy() {
 			// debugf("find %d %d %d\n", i, map_reverse[i], able[i]);
 		}	
 	}
+
+	int num_new = 321;
+	int eras_new = 114514191;
+	if (eras_min >= 5) {
+		for (int i = 0; i < 31; i++) {
+			if (able[i] == 0) {
+				if (erase_n[i] < eras_new) {
+					num_new = i;
+					eras_new = erase_n[i];
+				} 
+				if (erase_n[i] == eras_new) {
+					if (i < num) {
+						num_new = i;
+					}
+				}
+			}
+		}
+		char buf[512];
+		memset(buf, 0, sizeof(buf));
+		ide_read(0, num_new, buf, 1);
+
+		ide_write(0, num, buf, 1);
+		int logic = map_reverse[num_new];
+		map[logic] = num;
+		map_reverse[num] = logic;
+		able[num] = 0;
+
+		map_reverse[num_new] = -1;
+		able[num_new] = 1;
+
+		memset(buf, 0, sizeof(buf));
+		ide_write(0, num_new, buf, 1);
+		return num_new;
+	}
+
+	
+
+
+
+
+
 	return num;
 }
 
