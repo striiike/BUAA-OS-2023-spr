@@ -129,6 +129,7 @@ int ssd_read(u_int logic_no, void *dst) {
 int find() {
 	for (int i = 0; i < 32; i++) {
 		if (map_reverse[i] == -1 && able[i] == 1) {
+			debugf("find %d %d %d\n", i, map_reverse[i], able[i]);
 			return i;
 		}	
 	}
