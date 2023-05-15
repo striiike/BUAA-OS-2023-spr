@@ -7,7 +7,7 @@
 #include <lib.h>
 #include <mmu.h>
 
-int user_cmp(void * a, void * b) {
+int user_cmp(void *a, void *b) {
 	int i;
 	char *c = (char *) a;
 	char *d = (char *) b;
