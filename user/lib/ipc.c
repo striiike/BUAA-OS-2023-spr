@@ -62,7 +62,7 @@ void usleep(u_int us) {
 		int time_now = ((int) get_time(&temp) % 100) * 1000000;
 		int us_now = (int) temp;
 		// debugf("now:%d %d\n", time_now, us_now);
-		if (time_now >= time_in + us_in) {
+		if (time_now + us_now >= time_in + us_in + us) {
 			return;
 		} else {
 			// 进程切换
