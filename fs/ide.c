@@ -7,6 +7,21 @@
 #include <lib.h>
 #include <mmu.h>
 
+int user_cmp(void * a, void * b) {
+	int i;
+	char *c = (char *) a;
+	char *d = (char *) b;
+	for (i = 0; i < 512; i++) {
+		if (c[i] != d[i]) {
+			break;
+		}
+	}
+	if (i == 512) {
+		return 1;
+	}
+	return 0;
+}
+
 // Overview:
 //  read data from IDE disk. First issue a read request through
 //  disk register and then copy data from disk buffer
