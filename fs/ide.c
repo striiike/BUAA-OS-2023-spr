@@ -134,11 +134,11 @@ int find_phy() {
 	int eras_min = 114514191;
 	for (int i = 0; i < 32; i++) {
 		if (map_reverse[i] == -1 && able[i] == 1) {
-			if (erase_n[i] < min) {
+			if (erase_n[i] < eras_min) {
 				num = i;
 				eras_min = erase_n[i];
 			} 
-			if (erase_n[i] == min) {
+			if (erase_n[i] == eras_min) {
 				if (i < num) {
 					num = i;
 				}
