@@ -126,13 +126,15 @@ int ssd_read(u_int logic_no, void *dst) {
 	return 0;
 }
 
-int find() {
+int find_phy() {
+	debugf("in in in\n");
 	for (int i = 0; i < 32; i++) {
 		if (map_reverse[i] == -1 && able[i] == 1) {
 			debugf("find %d %d %d\n", i, map_reverse[i], able[i]);
 			return i;
 		}	
 	}
+	return -1;
 }
 
 
@@ -144,7 +146,7 @@ void ssd_write(u_int logic_no, void *src) {
 	} else {
 		ssd_erase(logic_no);
 	}
-	alloc = find();
+	alloc = find_phy();
 
 	map[logic_no] = alloc;
 	map_reverse[alloc] = logic_no;
