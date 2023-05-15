@@ -138,11 +138,11 @@ int find_phy() {
 				num = i;
 				eras_min = erase_n[i];
 			} 
-			if (erase_n[i] == eras_min) {
-				if (i < num) {
-					num = i;
-				}
-			}
+			// if (erase_n[i] == eras_min) {
+			// 	if (i < num) {
+			// 		num = i;
+			// 	}
+			// }
 			// debugf("find %d %d %d\n", i, map_reverse[i], able[i]);
 		}	
 	}
@@ -156,11 +156,11 @@ int find_phy() {
 					num_new = i;
 					eras_new = erase_n[i];
 				} 
-				if (erase_n[i] == eras_new) {
-					if (i < num) {
-						num_new = i;
-					}
-				}
+				// if (erase_n[i] == eras_new) {
+				// 	if (i < num_new) {
+				// 		num_new = i;
+				// 	}
+				// }
 			}
 		}
 		char buf[512];
