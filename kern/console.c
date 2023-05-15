@@ -12,3 +12,4 @@ char scancharc(void) {
 void halt(void) {
 	*((volatile char *)(KSEG1 + DEV_CONS_ADDRESS + DEV_CONS_HALT)) = 0;
 }
+t
