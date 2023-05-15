@@ -111,11 +111,11 @@ int able[50];
 int erase_n[50];
 
 void ssd_init() {
-	memset(map, -1, sizeof(map));
-	memset(map_reverse, -1, sizeof(map_reverse));
-	memset(able, 1, sizeof(able));
-	memset(erase_n, 0, sizeof(erase_n));
 	for (int i = 0; i < 32; i++) {
+		map[i] = -1;
+		map_reverse[i] = -1;
+		able[i] = 1;
+		erase_n[i] = 0;
 		debugf("%d %d %d %d\n", map[i], map_reverse[i], able[i], erase_n[i]);
 	}
 }
