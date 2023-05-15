@@ -130,13 +130,23 @@ int ssd_read(u_int logic_no, void *dst) {
 
 int find_phy() {
 	// debugf("in in in\n");
+	int num = 123;
+	int eras_min = 114514191;
 	for (int i = 0; i < 32; i++) {
 		if (map_reverse[i] == -1 && able[i] == 1) {
+			if (erase_n[i] < min) {
+				num = i;
+				eras_min = erase_n[i];
+			} 
+			if (erase_n[i] == min) {
+				if (i < num) {
+					num = i;
+				}
+			}
 			// debugf("find %d %d %d\n", i, map_reverse[i], able[i]);
-			return i;
 		}	
 	}
-	return -1;
+	return num;
 }
 
 
