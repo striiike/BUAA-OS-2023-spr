@@ -104,3 +104,114 @@ void ide_write(u_int diskno, u_int secno, void *src, u_int nsecs) {
 		
 	}
 }
+
+int map[50];
+int map_reverse[50];
+int bitmap[50];
+int erase_n[50];
+
+void ssd_init() {
+	memset(map, -1, sizeof(map));
+	memset(map_reverse, -1, sizeof(map_reverse));
+	memset(bitmap, 1, sizeof(bitmap));
+	memset(erase_n, 0, sizeof(erase_n));
+
+}
+
+int ssd_read(u_int logic_no, void *dst) {
+	if (map[logic_no] == -1) {
+		return -1;
+	}
+	ide_read(0, map[logic_no], dst, 1);
+	return 0;
+}
+
+int find() {
+	for (int i = 0; i < 32; i++) {
+		if (map_reverse[i] == -1 && bitmap[i] == 1) {
+			return i;
+		}	
+	}
+}
+
+
+void ssd_write(u_int logic_no, void *src) {
+	int alloc;
+	int phy_no = map[logic_no];
+	if (phy_no == -1) {
+		
+	} else {
+		ssd_erase(logic_no);
+	}
+	alloc = find();
+
+	map[logic_no] = alloc;
+	map_reverse[alloc] = logic_no;
+
+	ide_write(0, alloc, src, 1);
+
+	bitmap[alloc] = 0;
+}
+
+void ssd_erase(u_int logic_no) {
+	if (map[logic_no] == -1) {
+		return;
+	} else {
+		int phy_no = map[logic_no];
+
+		map[logic_no] = -1;
+		map_reverse[phy_no] = -1;
+
+		char tmp[512];
+		memset(tmp, 0, sizeof(tmp));
+		ide_write(0, phy_no, tmp, 1);
+
+		erase_n[phy_no]++;
+
+		bitmap[phy_no] = 1;
+	}
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
