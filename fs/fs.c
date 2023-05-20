@@ -204,7 +204,7 @@ void free_block(u_int blockno) {
 	// Step 1: If 'blockno' is invalid (0 or >= the number of blocks in 'super'), return.
 	/* Exercise 5.4: Your code here. (1/2) */
 
-	if (block_is_free(blockno)) {
+	if (!block_is_free(blockno)) {
 		return;
 	}
 
@@ -523,7 +523,7 @@ int dir_lookup(struct File *dir, char *name, struct File **file) {
 		void *blk;
 		/* Exercise 5.8: Your code here. (2/3) */
 
-		file_get_block(dir, i, &blk);
+		try(file_get_block(dir, i, &blk));
 
 		struct File *files = (struct File *)blk;
 

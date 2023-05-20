@@ -56,13 +56,13 @@ int open(const char *path, int mode) {
 	for (int i = 0; i < size; i += BY2PG) {
 		/* Exercise 5.9: Your code here. (4/5) */
 
-		try(fsipc_map(fileid, i, va));
-
+		try(fsipc_map(fileid, i, va + i));
+		
 	}
 
 	// Step 5: Return the number of file descriptor using 'fd2num'.
 	/* Exercise 5.9: Your code here. (5/5) */
-
+	// debugf("@@@ checkpoint: fd2num\n");
 	return fd2num(fd);
 
 }

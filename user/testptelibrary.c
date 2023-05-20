@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
 	}
 
 	wait(r);
-	debugf("TMPVAis  %s \n", TMPVA);
+	debugf("TMPVA is %s \n", TMPVA);
 	if (strcmp(TMPVA, msg) == 0) {
 		debugf("fork solved the problem of PTE_LIBRARY,congratulations!\n");
 	} else {
