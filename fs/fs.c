@@ -14,7 +14,7 @@ int block_is_free(u_int);
 void *diskaddr(u_int blockno) {
 	/* Exercise 5.6: Your code here. */
 
-	if (blockno * BY2BLK > DISKMAX - DISKMAP) {
+	if (blockno * BY2BLK > DISKMAX) {
 		panic_on("Error: wrong blockno!\n");
 	}
 	return DISKMAP + blockno * BY2BLK;
