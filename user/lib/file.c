@@ -107,16 +107,23 @@ int fakeopen(const char *path, int mode, struct Fd **ppfd) {
 }
 
 int open(const char *path, int mode) {
+	int r;
 	struct Fd *fd;
+	char *va;
+	struct Filefd *ffd;
+	struct File file_is_read;
+	u_int size, fileid;
 
 	int fdnum = fakeopen(path, mode, &fd);
+	ffd = (struct Filefd*) fd;
+	file_is_read = ffd->f_file;
 	
 	char buf[4096];
 	memset(buf, 0, sizeof(buf));
 
 	read(fdnum, buf, sizeof(buf));
-	debugf("i am reading type %s\n", fd->f_type);
-	debugf("i am reading name %s\n", fd->f_name);
+	debugf("i am reading type %s\n", file_is_read->f_type);
+	debugf("i am reading name %s\n", file_is_read->f_name);
 	debugf("i am reading data %s\n", buf);
 
 	return fdnum;
