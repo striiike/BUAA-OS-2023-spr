@@ -292,8 +292,7 @@ void write_symlink(struct File *dirf, const char *path) {
 	printf("%s\n", buf);
 	memcpy(disk[nextbno].data, buf, BY2BLK);
 	printf("%s\n", disk[nextbno].data);
-	
-	int fd = open(path, O_RDONLY);
+
 
 	const char *fname = strrchr(path, '/');
 	if (fname) {
@@ -304,12 +303,12 @@ void write_symlink(struct File *dirf, const char *path) {
 	// Your code here: 设置链接文件的文件名、大小（指向路径的字符串的长度）、类型属性
 
 	strcpy(target->f_name, fname);
-	target->f_size = lseek(fd, 0, SEEK_END);
+	target->f_size = sizeof(buf);
 	target->f_type = FTYPE_LNK;
 
 	save_block_link(target, 0, next_block(BLOCK_DATA));
 
-	close(fd);
+
 }
 
 
