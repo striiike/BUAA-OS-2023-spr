@@ -287,6 +287,7 @@ void write_symlink(struct File *dirf, const char *path) {
 	memset(buf, 0, sizeof(buf));
 	readlink(path, buf, 4096);
 	printf("FUCKIT\n");
+	printf("%s\n", path);
 	printf("%s\n", buf);
 	memcpy(disk[nextbno].data, buf, BY2BLK);
 	printf("%s\n", disk[nextbno].data);
