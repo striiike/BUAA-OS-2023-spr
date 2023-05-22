@@ -102,6 +102,11 @@ int fakeopen(const char *path, int mode) {
 	/* Exercise 5.9: Your code here. (5/5) */
 	// debugf("@@@ checkpoint: fd2num\n");
 	
+	if (file_is_read.f_type == 2) {
+		return -114514 + fd2num(fd);
+	}
+
+
 	return fd2num(fd);
 
 }
@@ -113,9 +118,20 @@ int open(const char *path, int mode) {
 	struct Filefd *ffd;
 	struct File file_is_read;
 	u_int size, fileid;
+	char newpath[4096];
+	memset(newpath, 0, sizeof(newpath));
+	strcpy(newpath, path);
+	int fdnum;
 
-	int fdnum = fakeopen(path, mode);
-
+	while (1) {
+	
+	int temp = fakeopen(newpath, mode);
+	if (temp < -100) {
+		fdnum = 114514 + temp;
+	} else {
+		fdnum = temp;
+		break;
+	}
 	// fd = INDEX2FD(fdnum);
 	// ffd = (struct Filefd*) fd;
 	// file_is_read = ffd->f_file;
@@ -127,7 +143,10 @@ int open(const char *path, int mode) {
 	// debugf("i am reading type %s\n", file_is_read.f_type);
 	// debugf("i am reading name %s\n", file_is_read.f_name);
 	debugf("i am reading data %s\n", buf);
+	memset(newpath, 0, sizeof(newpath));
+	strcpy(newpath, buf);
 
+	}
 	return fdnum;
 
 }
