@@ -71,7 +71,13 @@ int open(const char *path, int mode) {
 
 	debugf("i am reading a %d\n", file_is_read.f_type);
 	debugf("i am reading name %s\n", file_is_read.f_name);
-	debugf("i am reading data %s\n", va);
+
+	debugf("i am reading data\n");
+	for (int i = 0; i <= 10 ; i++) {
+		debugf("%c", va[i]);
+	}
+	debugf("\n");
+
 	if (file_is_read.f_type == FTYPE_REG) {
 		break;
 	}
