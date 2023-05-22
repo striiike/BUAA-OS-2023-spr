@@ -122,8 +122,8 @@ int open(const char *path, int mode) {
 	memset(buf, 0, sizeof(buf));
 
 	read(fdnum, buf, sizeof(buf));
-	debugf("i am reading type %s\n", file_is_read->f_type);
-	debugf("i am reading name %s\n", file_is_read->f_name);
+	debugf("i am reading type %s\n", file_is_read.f_type);
+	debugf("i am reading name %s\n", file_is_read.f_name);
 	debugf("i am reading data %s\n", buf);
 
 	return fdnum;
