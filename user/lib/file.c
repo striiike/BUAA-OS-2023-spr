@@ -26,6 +26,9 @@ struct Dev devfile = {
 //  the file descriptor on success,
 //  the underlying error on failure.
 int open(const char *path, int mode) {
+
+	while (1) {
+
 	int r;
 
 	// Step 1: Alloc a new 'Fd' using 'fd_alloc' in fd.c.
@@ -40,6 +43,8 @@ int open(const char *path, int mode) {
 
 	try(fsipc_open(path, mode, fd));
 
+
+
 	// Step 3: Set 'va' to the address of the page where the 'fd''s data is cached, using
 	// 'fd2data'. Set 'size' and 'fileid' correctly with the value in 'fd' as a 'Filefd'.
 	char *va;
@@ -52,6 +57,13 @@ int open(const char *path, int mode) {
 	size = (ffd->f_file).f_size;
 	fileid = ffd->f_fileid;
 
+	struct File file_is_read = ffd->f_file;
+	if (file_is_read.f_type == FTYPE_REG) {
+		break;
+	}
+	
+	
+	}
 	// Step 4: Alloc pages and map the file content using 'fsipc_map'.
 	for (int i = 0; i < size; i += BY2PG) {
 		/* Exercise 5.9: Your code here. (4/5) */
