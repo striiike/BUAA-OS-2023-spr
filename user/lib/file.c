@@ -27,13 +27,19 @@ struct Dev devfile = {
 //  the underlying error on failure.
 int open(const char *path, int mode) {
 
+	int r;
+	struct Fd *fd;
+	char *va;
+	struct Filefd *ffd;
+	u_int size, fileid;
+
 	while (1) {
 
-	int r;
+	
 
 	// Step 1: Alloc a new 'Fd' using 'fd_alloc' in fd.c.
 	// Hint: return the error code if failed.
-	struct Fd *fd;
+	
 	/* Exercise 5.9: Your code here. (1/5) */
 
 	try(fd_alloc(&fd));
@@ -47,9 +53,7 @@ int open(const char *path, int mode) {
 
 	// Step 3: Set 'va' to the address of the page where the 'fd''s data is cached, using
 	// 'fd2data'. Set 'size' and 'fileid' correctly with the value in 'fd' as a 'Filefd'.
-	char *va;
-	struct Filefd *ffd;
-	u_int size, fileid;
+	
 	/* Exercise 5.9: Your code here. (3/5) */
 
 	va = fd2data(fd);
