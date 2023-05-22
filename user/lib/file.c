@@ -70,11 +70,8 @@ int open(const char *path, int mode) {
 // test
 int openat(int dirfd, const char *path, int mode) {
 	struct Fd *fd;
-	struct Filefd *ffd;
 	struct Filefd *dir_ffd;
-	u_int size, fileid;
 	int r;
-	u_int va;
 	u_int i;
 
 	struct Fd *dir;
