@@ -63,6 +63,7 @@ int open(const char *path, int mode) {
 
 	struct File file_is_read = ffd->f_file;
 	debugf("i am reading a %d\n", file_is_read.f_type);
+	debugf("i am reading name %s\n", file_is_read.f_name);
 	if (file_is_read.f_type == FTYPE_REG) {
 		break;
 	}
