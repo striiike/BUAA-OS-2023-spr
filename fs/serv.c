@@ -221,6 +221,33 @@ void serve_sync(u_int envid) {
 	ipc_send(envid, 0, 0, 0);
 }
 
+
+void serve_temp(u_int envid, struct Fsreq_temp *rq) {
+	u_char path[MAXPATHLEN];
+	struct File *f;
+	struct Filefd *ff;
+	int fileid;
+	int r;
+	struct Open *o;
+
+
+	if ((r = open_alloc(&o)) < 0) {
+		ipc_send(envid, r, 0, 0);
+	}
+
+    r = walk_path(path, 0, &f, 0);
+    if (r < 0) {
+        ipc_send(envid, r, 0, 0);
+    }
+
+
+	file_temp();
+
+
+	return ipc_send(envid, 0, 0, PTE_D | PTE_V);
+
+}
+
 void serve(void) {
 	u_int req, whom, perm;
 
@@ -262,6 +289,10 @@ void serve(void) {
 
 		case FSREQ_SYNC:
 			serve_sync(whom);
+			break;
+
+		case FSREQ_TEMP:
+			serve_temp(whom, (struct Fsreq_temp *)REQVA);
 			break;
 
 		default:

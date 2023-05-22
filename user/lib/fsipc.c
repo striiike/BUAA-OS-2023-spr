@@ -142,3 +142,26 @@ int fsipc_remove(const char *path) {
 int fsipc_sync(void) {
 	return fsipc(FSREQ_SYNC, fsipcbuf, 0, 0);
 }
+
+
+
+int fsipc_temp(const char* path, struct Fd *fd) {
+
+	struct Fsreq_temp *req;
+	u_int perm;
+
+	
+
+	req = (struct Fsreq_temp *)fsipcbuf;
+
+	// The path is too long.
+	if (strlen(path) >= MAXPATHLEN) {
+		return -E_BAD_PATH;
+	}
+
+	strcpy((char *)req->req_path, path);
+	
+
+
+	return fsipc(FSREQ_TEMP, req, fd, &perm);
+}

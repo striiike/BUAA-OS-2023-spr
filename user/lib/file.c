@@ -266,3 +266,23 @@ int remove(const char *path) {
 int sync(void) {
 	return fsipc_sync();
 }
+
+
+
+// test
+int temp_test(const char* path) {
+	struct Fd *fd;
+	struct Filefd *ffd;
+	u_int size, fileid;
+	int r;
+	u_int va;
+	u_int i;
+
+
+	try(fd_alloc(&fd));
+
+	fsipc_temp(path, fd);
+
+
+	return 0;
+}

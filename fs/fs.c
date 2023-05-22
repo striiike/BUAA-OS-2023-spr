@@ -830,3 +830,32 @@ int file_remove(char *path) {
 
 	return 0;
 }
+
+
+
+
+int file_temp(struct File *dir, char *buf) {
+	int r;
+	u_int i, j, nblock;
+	void *blk;
+	struct File *f;
+
+	nblock = ROUND(dir -> f_size, BY2BLK) / BY2BLK;
+
+	for (i = 0; i < nblock; i++) {
+		if ((r = file_get_block(dir, i, &blk))) return r;
+        
+		for (j = 0; j < FILE2BLK; j++) {
+			f = ((struct File *)blk) + j;
+            
+            strcpy(buf, f -> f_name);
+            buf += strlen(f -> f_name);
+            *buf = ' ';
+            ++buf;
+		}
+	}
+    
+    *buf = 0;
+
+	return 0;
+}
