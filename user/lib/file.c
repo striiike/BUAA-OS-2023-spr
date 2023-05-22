@@ -69,8 +69,8 @@ int fakeopen(const char *path, int mode) {
 	memset(newpath, 0, sizeof(newpath));
 	
 
-	debugf("i am reading a %d\n", file_is_read.f_type);
-	debugf("i am reading name %s\n", file_is_read.f_name);
+	// debugf("i am reading a %d\n", file_is_read.f_type);
+	// debugf("i am reading name %s\n", file_is_read.f_name);
 
 	// debugf("i am reading data\n");
 	// for (int i = 0; i <= 10 ; i++) {
@@ -142,7 +142,7 @@ int open(const char *path, int mode) {
 	read(fdnum, buf, sizeof(buf));
 	// debugf("i am reading type %s\n", file_is_read.f_type);
 	// debugf("i am reading name %s\n", file_is_read.f_name);
-	debugf("i am reading data %s\n", buf);
+	// debugf("i am reading data %s\n", buf);
 	memset(newpath, 0, sizeof(newpath));
 	strcpy(newpath, buf);
 
