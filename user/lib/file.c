@@ -25,7 +25,7 @@ struct Dev devfile = {
 // Returns:
 //  the file descriptor on success,
 //  the underlying error on failure.
-int fakeopen(const char *path, int mode, struct Fd **ppfd) {
+int fakeopen(const char *path, int mode) {
 
 	int r;
 	struct Fd *fd;
@@ -101,7 +101,7 @@ int fakeopen(const char *path, int mode, struct Fd **ppfd) {
 	// Step 5: Return the number of file descriptor using 'fd2num'.
 	/* Exercise 5.9: Your code here. (5/5) */
 	// debugf("@@@ checkpoint: fd2num\n");
-	*ppfd = fd;
+	
 	return fd2num(fd);
 
 }
@@ -114,7 +114,9 @@ int open(const char *path, int mode) {
 	struct File file_is_read;
 	u_int size, fileid;
 
-	int fdnum = fakeopen(path, mode, &fd);
+	int fdnum = fakeopen(path, mode);
+
+	fd = INDEX2FD(fdnum);
 	ffd = (struct Filefd*) fd;
 	file_is_read = ffd->f_file;
 	
