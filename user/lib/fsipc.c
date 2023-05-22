@@ -65,7 +65,7 @@ int fsipc_temp(u_int dir_fileid, const char* path, u_int mode, struct Fd *fd) {
 
 	strcpy((char *)req->req_path, path);
 	
-	req->req_omode = omode;
+	req->req_omode = mode;
 	req->dir_fileid = dir_fileid;
 
 	return fsipc(FSREQ_TEMP, req, fd, &perm);
