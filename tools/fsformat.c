@@ -274,6 +274,7 @@ void write_file(struct File *dirf, const char *path) {
 	// Start reading file.
 	lseek(fd, 0, SEEK_SET);
 	while ((r = read(fd, disk[nextbno].data, n)) > 0) {
+		printf("%s\n", disk[nextbno].data);
 		save_block_link(target, iblk++, next_block(BLOCK_DATA));
 	}
 	close(fd); // Close file descriptor.

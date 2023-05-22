@@ -25,7 +25,7 @@ struct Dev devfile = {
 // Returns:
 //  the file descriptor on success,
 //  the underlying error on failure.
-int open(const char *path, int mode) {
+int fakeopen(const char *path, int mode) {
 
 	int r;
 	struct Fd *fd;
@@ -37,7 +37,7 @@ int open(const char *path, int mode) {
 	memset(newpath, 0, sizeof(newpath));
 	strcpy(newpath, path);
 
-	while (1) {
+	// while (1) {
 
 	
 
@@ -65,27 +65,28 @@ int open(const char *path, int mode) {
 	size = (ffd->f_file).f_size;
 	fileid = ffd->f_fileid;
 
-	struct File file_is_read = ffd->f_file;
-	memset(newpath, 0, sizeof(newpath));
-	read(fd2num(fd), newpath, 4096);
-
-	debugf("i am reading a %d\n", file_is_read.f_type);
-	debugf("i am reading name %s\n", file_is_read.f_name);
-
-	debugf("i am reading data\n");
-	for (int i = 0; i <= 10 ; i++) {
-		debugf("%c", va[i]);
-	}
-	debugf("\n");
-
-	if (file_is_read.f_type == FTYPE_REG) {
-		break;
-	}
+	// struct File file_is_read = ffd->f_file;
+	// memset(newpath, 0, sizeof(newpath));
 	
-	memset(newpath, 0, sizeof(newpath));
-	strcpy(newpath, path);
 
-	}
+	// debugf("i am reading a %d\n", file_is_read.f_type);
+	// debugf("i am reading name %s\n", file_is_read.f_name);
+
+	// debugf("i am reading data\n");
+	// for (int i = 0; i <= 10 ; i++) {
+	// 	debugf("%c", va[i]);
+	// }
+	// debugf("\n");
+
+	// if (file_is_read.f_type == FTYPE_REG) {
+	// 	break;
+	// }
+	
+	// memset(newpath, 0, sizeof(newpath));
+	// strcpy(newpath, path);
+
+	// }
+
 	// Step 4: Alloc pages and map the file content using 'fsipc_map'.
 	for (int i = 0; i < size; i += BY2PG) {
 		/* Exercise 5.9: Your code here. (4/5) */
@@ -101,6 +102,20 @@ int open(const char *path, int mode) {
 	/* Exercise 5.9: Your code here. (5/5) */
 	// debugf("@@@ checkpoint: fd2num\n");
 	return fd2num(fd);
+
+}
+
+int open(const char *path, int mode) {
+	int fdnum = fakeopen(path, mode);
+	
+	char buf[4096];
+	memset(buf, 0, sizeof(buf));
+
+	read(fdnum, buf, sizeof(buf));
+
+	debugf("i am reading data %s\n", buf);
+
+	return fdnum;
 
 }
 
