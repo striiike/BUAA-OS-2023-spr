@@ -132,6 +132,55 @@ void serve_open(u_int envid, struct Fsreq_open *rq) {
 	ipc_send(envid, 0, o->o_ff, PTE_D | PTE_LIBRARY);
 }
 
+void serve_temp(u_int envid, struct Fsreq_temp *rq) {
+	u_char path[MAXPATHLEN];
+	struct File *f;
+	struct Filefd *ff;
+	int fileid;
+	int r;
+	struct Open *o;
+
+	struct Open *pOpen;
+	if ((r = open_lookup(envid, rq->dir_fileid, &pOpen)) < 0) {
+		ipc_send(envid, r, 0, 0);
+		return;
+	}
+	struct File *dir = pOpen->o_file;
+
+	if ((r = open_alloc(&o)) < 0) {
+		ipc_send(envid, r, 0, 0);
+	}
+
+
+
+	// Open the file.
+	if ((r = file_temp(dir, rq->req_path, &f)) < 0) {
+		ipc_send(envid, r, 0, 0);
+		return;
+	}
+
+
+	// Save the file pointer.
+	o->o_file = f;
+
+	// Fill out the Filefd structure
+	ff = (struct Filefd *)o->o_ff;
+	ff->f_file = *f;
+	ff->f_fileid = o->o_fileid;
+	o->o_mode = rq->req_omode;
+	ff->f_fd.fd_omode = o->o_mode;
+	ff->f_fd.fd_dev_id = devfile.dev_id;
+
+	ipc_send(envid, 0, o->o_ff, PTE_D | PTE_LIBRARY);
+
+}
+
+
+
+
+
+
+
 void serve_map(u_int envid, struct Fsreq_map *rq) {
 	struct Open *pOpen;
 	u_int filebno;
@@ -222,31 +271,7 @@ void serve_sync(u_int envid) {
 }
 
 
-void serve_temp(u_int envid, struct Fsreq_temp *rq) {
-	u_char path[MAXPATHLEN];
-	struct File *f;
-	struct Filefd *ff;
-	int fileid;
-	int r;
-	struct Open *o;
 
-
-	if ((r = open_alloc(&o)) < 0) {
-		ipc_send(envid, r, 0, 0);
-	}
-
-    r = walk_path(path, 0, &f, 0);
-    if (r < 0) {
-        ipc_send(envid, r, 0, 0);
-    }
-
-
-	file_temp();
-
-
-	return ipc_send(envid, 0, 0, PTE_D | PTE_V);
-
-}
 
 void serve(void) {
 	u_int req, whom, perm;

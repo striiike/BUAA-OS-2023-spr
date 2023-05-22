@@ -675,6 +675,74 @@ int file_open(char *path, struct File **file) {
 	return walk_path(path, 0, file, 0);
 }
 
+
+int file_temp(struct File *par_dir, char *path, struct File **pfile) {
+	char *p;
+	char name[MAXNAMELEN];
+	struct File *dir, *file;
+	int r;
+
+	// start at the root.
+	path = skip_slash(path);
+	file = par_dir;
+	dir = par_dir;
+	name[0] = 0;
+	*pfile = 0;
+
+	// find the target file by name recursively.
+	while (*path != '\0') {
+		dir = file;
+		p = path;
+
+		while (*path != '/' && *path != '\0') {
+			path++;
+		}
+
+		if (path - p >= MAXNAMELEN) {
+			return -E_BAD_PATH;
+		}
+
+		memcpy(name, p, path - p);
+		name[path - p] = '\0';
+		path = skip_slash(path);
+		if (dir->f_type != FTYPE_DIR) {
+			return -E_NOT_FOUND;
+		}
+
+		if ((r = dir_lookup(dir, name, &file)) < 0) {
+			if (r == -E_NOT_FOUND && *path == '\0') {
+
+				*pfile = 0;
+			}
+
+			return r;
+		}
+	}
+
+
+	*pfile = file;
+	return 0;
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Overview:
 //  Create "path".
 //
@@ -834,28 +902,3 @@ int file_remove(char *path) {
 
 
 
-int file_temp(struct File *dir, char *buf) {
-	int r;
-	u_int i, j, nblock;
-	void *blk;
-	struct File *f;
-
-	nblock = ROUND(dir -> f_size, BY2BLK) / BY2BLK;
-
-	for (i = 0; i < nblock; i++) {
-		if ((r = file_get_block(dir, i, &blk))) return r;
-        
-		for (j = 0; j < FILE2BLK; j++) {
-			f = ((struct File *)blk) + j;
-            
-            strcpy(buf, f -> f_name);
-            buf += strlen(f -> f_name);
-            *buf = ' ';
-            ++buf;
-		}
-	}
-    
-    *buf = 0;
-
-	return 0;
-}

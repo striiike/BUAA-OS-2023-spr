@@ -46,6 +46,8 @@ struct Fsreq_remove {
 
 struct Fsreq_temp {
 	char req_path[MAXPATHLEN];
+	u_int dir_fileid;
+	u_int req_omode;
 };
 
 #endif

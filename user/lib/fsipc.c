@@ -49,6 +49,31 @@ int fsipc_open(const char *path, u_int omode, struct Fd *fd) {
 	return fsipc(FSREQ_OPEN, req, fd, &perm);
 }
 
+int fsipc_temp(u_int dir_fileid, const char* path, u_int mode, struct Fd *fd) {
+
+	struct Fsreq_temp *req;
+	u_int perm;
+
+	
+
+	req = (struct Fsreq_temp *)fsipcbuf;
+
+	// The path is too long.
+	if (strlen(path) >= MAXPATHLEN) {
+		return -E_BAD_PATH;
+	}
+
+	strcpy((char *)req->req_path, path);
+	
+	req->req_omode = omode;
+	req->dir_fileid = dir_fileid;
+
+	return fsipc(FSREQ_TEMP, req, fd, &perm);
+}
+
+
+
+
 // Overview:
 //  Make a map-block request to the file server. We send the fileid and
 //  the (byte) offset of the desired block in the file, and the server sends
@@ -145,23 +170,4 @@ int fsipc_sync(void) {
 
 
 
-int fsipc_temp(const char* path, struct Fd *fd) {
 
-	struct Fsreq_temp *req;
-	u_int perm;
-
-	
-
-	req = (struct Fsreq_temp *)fsipcbuf;
-
-	// The path is too long.
-	if (strlen(path) >= MAXPATHLEN) {
-		return -E_BAD_PATH;
-	}
-
-	strcpy((char *)req->req_path, path);
-	
-
-
-	return fsipc(FSREQ_TEMP, req, fd, &perm);
-}
