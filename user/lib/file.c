@@ -65,12 +65,12 @@ int fakeopen(const char *path, int mode) {
 	size = (ffd->f_file).f_size;
 	fileid = ffd->f_fileid;
 
-	// struct File file_is_read = ffd->f_file;
-	// memset(newpath, 0, sizeof(newpath));
+	struct File file_is_read = ffd->f_file;
+	memset(newpath, 0, sizeof(newpath));
 	
 
-	// debugf("i am reading a %d\n", file_is_read.f_type);
-	// debugf("i am reading name %s\n", file_is_read.f_name);
+	debugf("i am reading a %d\n", file_is_read.f_type);
+	debugf("i am reading name %s\n", file_is_read.f_name);
 
 	// debugf("i am reading data\n");
 	// for (int i = 0; i <= 10 ; i++) {
