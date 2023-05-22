@@ -116,16 +116,16 @@ int open(const char *path, int mode) {
 
 	int fdnum = fakeopen(path, mode);
 
-	fd = INDEX2FD(fdnum);
-	ffd = (struct Filefd*) fd;
-	file_is_read = ffd->f_file;
+	// fd = INDEX2FD(fdnum);
+	// ffd = (struct Filefd*) fd;
+	// file_is_read = ffd->f_file;
 	
 	char buf[4096];
 	memset(buf, 0, sizeof(buf));
 
 	read(fdnum, buf, sizeof(buf));
-	debugf("i am reading type %s\n", file_is_read.f_type);
-	debugf("i am reading name %s\n", file_is_read.f_name);
+	// debugf("i am reading type %s\n", file_is_read.f_type);
+	// debugf("i am reading name %s\n", file_is_read.f_name);
 	debugf("i am reading data %s\n", buf);
 
 	return fdnum;
