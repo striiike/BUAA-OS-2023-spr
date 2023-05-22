@@ -66,22 +66,12 @@ int open(const char *path, int mode) {
 	fileid = ffd->f_fileid;
 
 	struct File file_is_read = ffd->f_file;
-	
-	
-	// Step 4: Alloc pages and map the file content using 'fsipc_map'.
-	for (int i = 0; i < size; i += BY2PG) {
-		/* Exercise 5.9: Your code here. (4/5) */
-
-		try(fsipc_map(fileid, i, va + i));
-		
-	}
-
 	memset(newpath, 0, sizeof(newpath));
 	read(fd2num(fd), newpath, 4096);
 
 	debugf("i am reading a %d\n", file_is_read.f_type);
 	debugf("i am reading name %s\n", file_is_read.f_name);
-	debugf("i am reading data %s\n", newpath);
+	debugf("i am reading data %s\n", va);
 	if (file_is_read.f_type == FTYPE_REG) {
 		break;
 	}
@@ -90,6 +80,17 @@ int open(const char *path, int mode) {
 	strcpy(newpath, path);
 
 	}
+	// Step 4: Alloc pages and map the file content using 'fsipc_map'.
+	for (int i = 0; i < size; i += BY2PG) {
+		/* Exercise 5.9: Your code here. (4/5) */
+
+		try(fsipc_map(fileid, i, va + i));
+		
+	}
+
+	
+
+	
 	// Step 5: Return the number of file descriptor using 'fd2num'.
 	/* Exercise 5.9: Your code here. (5/5) */
 	// debugf("@@@ checkpoint: fd2num\n");
