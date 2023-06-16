@@ -95,3 +95,15 @@ int strcmp(const char *p, const char *q) {
 
 	return 0;
 }
+
+void strcat(char *src, char *target) {
+	while (*src) {
+		src++;
+	}
+	while (*target) {
+		*src = *target;
+		src++;
+		target++;
+	}
+	*src = 0;
+}  

@@ -22,6 +22,11 @@ enum {
 	SYS_cgetc,
 	SYS_write_dev,
 	SYS_read_dev,
+
+	SYS_ch_dir,
+	SYS_get_cwd,
+
+
 	MAX_SYSNO,
 };
 

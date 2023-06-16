@@ -3,7 +3,13 @@
 int main() {
 	int fd, n, r;
 	char buf[512 + 1];
-
+	if ((r = opencons()) != 0) {
+		user_panic("opencons: %d", r);
+	}
+	// stdout
+	if ((r = dup(0, 1)) < 0) {
+		user_panic("dup: %d", r);
+	}
 	debugf("icode: open /motd\n");
 	if ((fd = open("/motd", O_RDONLY)) < 0) {
 		user_panic("icode: open /motd: %d", fd);

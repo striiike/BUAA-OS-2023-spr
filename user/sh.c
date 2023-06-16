@@ -1,8 +1,18 @@
 #include <args.h>
 #include <lib.h>
+#include <cursor.h>
+
+static char argv_shell[128][32];
+static int shared[1024]; 
+
 
 #define WHITESPACE " \t\r\n"
 #define SYMBOLS "<|>&;()"
+
+static int A[1024];
+static int B[1024];
+static int C[1024];
+static int D[1024];
 
 /* Overview:
  *   Parse the next token from the string at s.
@@ -19,34 +29,78 @@
  *   The buffer is modified to turn the spaces after words into zero bytes ('\0'), so that the
  *   returned token is a null-terminated string.
  */
+// int _gettoken(char *s, char **p1, char **p2) {
+// 	*p1 = 0;
+// 	*p2 = 0;
+// 	if (s == 0) {
+// 		return 0;
+// 	}
+
+// 	while (strchr(WHITESPACE, *s)) {
+// 		*s++ = 0;
+// 	}
+// 	if (*s == 0) {
+// 		return 0;
+// 	}
+
+// 	if (strchr(SYMBOLS, *s)) {
+// 		int t = *s;
+// 		*p1 = s;
+// 		*s++ = 0;
+// 		*p2 = s;
+// 		return t;
+// 	}
+
+// 	*p1 = s;
+// 	while (*s && !strchr(WHITESPACE SYMBOLS, *s)) {
+// 		s++;
+// 	}
+// 	*p2 = s;
+// 	return 'w';
+// }
+
 int _gettoken(char *s, char **p1, char **p2) {
-	*p1 = 0;
-	*p2 = 0;
-	if (s == 0) {
-		return 0;
-	}
+    *p1 = 0;
+    *p2 = 0;
+    if (s == 0) {
+        return 0;
+    }
 
-	while (strchr(WHITESPACE, *s)) {
-		*s++ = 0;
-	}
-	if (*s == 0) {
-		return 0;
-	}
+    while (strchr(WHITESPACE, *s)) {
+        *s++ = 0;
+    }
+    if (*s == 0) {
+        return 0;
+    }
 
-	if (strchr(SYMBOLS, *s)) {
-		int t = *s;
-		*p1 = s;
-		*s++ = 0;
-		*p2 = s;
-		return t;
-	}
-
-	*p1 = s;
-	while (*s && !strchr(WHITESPACE SYMBOLS, *s)) {
-		s++;
-	}
-	*p2 = s;
-	return 'w';
+    if (strchr(SYMBOLS, *s)) {
+        int t = *s;
+        *p1 = s;
+        *s++ = 0;
+        *p2 = s;
+        return t;
+    }
+    // changed code
+    if (*s == '\"') {
+        *p1 = s + 1;
+        *s++ = 0;
+        while (*s != 34 && *s) {
+            s++;
+        } 
+        if (*s == 0) {
+            printf("Error: worng \"!\n");
+            return 0;
+        }
+        *s = 0;
+        *p2 = s;
+    } else {
+        *p1 = s;
+        while (*s && !strchr(WHITESPACE SYMBOLS, *s)) {
+                s++;
+        }
+        *p2 = s;
+    }
+    return 'w';
 }
 
 int gettoken(char *s, char **p1) {
@@ -65,7 +119,7 @@ int gettoken(char *s, char **p1) {
 
 #define MAXARGS 128
 
-int parsecmd(char **argv, int *rightpipe) {
+int parsecmd(char **argv, int *rightpipe, int *multi_task) {
 	int argc = 0;
 	while (1) {
 		char *t;
@@ -132,13 +186,13 @@ int parsecmd(char **argv, int *rightpipe) {
 			*rightpipe = fork();
 			if (*rightpipe == 0) {
 				dup(p[0], 0);
-				close(p[1]);
 				close(p[0]);
-				return parsecmd(argv, rightpipe);
+				close(p[1]);				
+				return parsecmd(argv, rightpipe, multi_task);
 			} else {
 				dup(p[1], 1);
-				close(p[0]);
 				close(p[1]);
+				close(p[0]);				
 				return argc;
 			}
 			
@@ -146,55 +200,218 @@ int parsecmd(char **argv, int *rightpipe) {
 			// user_panic("| not implemented");
 
 			break;
+		case ';':;
+
+			int semicolon = fork();
+			if (semicolon == 0) {
+				return argc;
+			} else {	
+				wait(semicolon);
+				close_all();
+				if ((r = opencons()) != 0) {
+					user_panic("opencons: %d", r);
+				}
+				// stdout
+				if ((r = dup(0, 1)) < 0) {
+					user_panic("dup: %d", r);
+				}
+				return parsecmd(argv, rightpipe, multi_task);
+			}
+			break;
+		
+		case '&':;
+			// argv[argc] = 0;
+			
+			// for (int i = 0; i < argc; i++) {
+			// 	strcpy(argv_shell[i], argv[i]);
+			// }
+			// memset(argv_shell[argc], 0, sizeof argv_shell[0]);
+			// shared[1] = argc;
+			// shared[0] = '&';
+			// return parsecmd(argv, rightpipe, multi_task);
+			int ret = fork();
+			if (ret == 0) {
+				return argc;
+			} else {
+				return parsecmd(argv, rightpipe, multi_task);
+			}
+			break;
 		}
+
 	}
 
 	return argc;
 }
 
-void runcmd(char *s) {
+
+// 1 for cd
+// 2 for pwd
+// 0 for normal
+
+void runcmd(char *s, int shellid) {
 	gettoken(s, 0);
 
 	char *argv[MAXARGS];
 	int rightpipe = 0;
-	int argc = parsecmd(argv, &rightpipe);
+	int multi_task = 0;
+	int argc = parsecmd(argv, &rightpipe, &multi_task);
 	if (argc == 0) {
 		return;
 	}
 	argv[argc] = 0;
 
-	int child = spawn(argv[0], argv);
+	if (!strcmp(argv[0], "cd")) {
+		if (argv[1]) {
+			int fdnum = open(argv[1], O_RDONLY);
+			if (fdnum < 0) {
+				printf ("Error: Wrong Format cd!\n");
+				return;
+			}
+			close(fdnum);
+			cd(shellid, argv[1]);
+			cd(0, argv[1]);
+			return;
+		} else {
+			printf ("Error: No Input cd!\n");
+		}
+	}
+
+	if (!strcmp(argv[0], "pwd")) {
+		pwd(shellid, NULL);
+		return;
+	}
+
+
+	// debugf("@@@@@@i am spawning %s \n", argv[0]);
+
+	char buf[100];
+	memset(buf, 0, sizeof buf);
+	if (argv[0][0] == '/') {
+		strcpy(buf, argv[0]);
+	} else {
+		strcat(buf, "/");
+		strcat(buf, argv[0]);
+	}
+	
+	int child = spawn(buf, argv);
 	close_all();
 	if (child >= 0) {
 		wait(child);
 	} else {
 		debugf("spawn %s: %d\n", argv[0], child);
 	}
+
 	if (rightpipe) {
 		wait(rightpipe);
 	}
+
 	exit();
 }
 
+
+void moveDirection(char tmp, int *index, char *buf) {
+
+	switch (tmp) {
+	case 'A':
+		printf("\x1b[B\x1b[2K\x1b[G");
+		getLastHistory(buf);
+		printf("$ %s", buf);
+		*index = strlen(buf) - 1;
+		break;
+	case 'B':
+		printf("\x1b[2K\x1b[G");
+		getNextHistory(buf);
+		printf("$ %s", buf);
+		*index = strlen(buf) - 1;
+		break;
+	case 'C':
+		if (*index > strlen(buf) - 1) {
+			printf("\x1b[D");
+			*index -= 1;
+		} else {
+		}	
+		break;
+	case 'D':
+		if (*index > 0) {
+			*index -= 2;
+		} else {
+			*index -= 1;
+			printf("\x1b[C");
+		}
+		break;
+	default:
+		break;
+	}
+}
+
 void readline(char *buf, u_int n) {
+	
+	int curHistoryLine = 0;
 	int r;
 	for (int i = 0; i < n; i++) {
-		if ((r = read(0, buf + i, 1)) != 1) {
+		char c;
+		if ((r = read(0, &c, 1)) != 1) {
 			if (r < 0) {
 				debugf("read error: %d\n", r);
 			}
 			exit();
 		}
-		if (buf[i] == '\b' || buf[i] == 0x7f) {
+
+		if (c == '\x1b') {
+			char tmp[10];
+			memset(tmp, 0, sizeof tmp);
+
+			if ((r = read(0, tmp, 1)) != 1) {
+				if (r < 0 || tmp[0] != '[') {
+					debugf("read error: %d\n", r);
+				}
+				exit();
+			}
+			if ((r = read(0, tmp + 1, 1)) != 1) {
+				if (r < 0) {
+					debugf("read error: %d\n", r);
+				}
+				exit();
+			}
+
+			moveDirection(tmp[1], &i, buf);
+
+
+			continue;
+
+		}
+
+		
+
+
+		if (c == '\b' || c == 0x7f) {
 			if (i > 0) {
-				i -= 2;
+				i -= 1;
 			} else {
 				i = -1;
 			}
 			if (buf[i] != '\b') {
-				printf("\b");
+				buf[i] = ' ';
+				printf("\b \b");
 			}
+
+			// printf("\n");
+			// for (int j = 0; j < strlen(buf); j++) {
+			// 	printf("%d ", buf[j]);
+			// }
+			// printf("\n");
+
+			continue;
 		}
+
+		buf[i] = c;
+
+			// printf("\n");
+			// for (int j = 0; j < strlen(buf); j++) {
+			// 	printf("%d ", buf[j]);
+			// }
+			// printf("\n");
+
 		if (buf[i] == '\r' || buf[i] == '\n') {
 			buf[i] = 0;
 			return;
@@ -207,6 +424,8 @@ void readline(char *buf, u_int n) {
 	buf[0] = 0;
 }
 
+
+
 char buf[1024];
 
 void usage(void) {
@@ -218,11 +437,14 @@ int main(int argc, char **argv) {
 	int r;
 	int interactive = iscons(0);
 	int echocmds = 0;
+	int shellid = syscall_getenvid();
+
 	debugf("\n:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::\n");
 	debugf("::                                                         ::\n");
-	debugf("::                     MOS Shell 2023                      ::\n");
+	debugf("::                     MOS Shell 2077                      ::\n");
 	debugf("::                                                         ::\n");
 	debugf(":::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::\n");
+	// debugf("checkpoint %d %s\n", argc, argv[0]);
 	ARGBEGIN {
 	case 'i':
 		interactive = 1;
@@ -238,6 +460,7 @@ int main(int argc, char **argv) {
 	if (argc > 1) {
 		usage();
 	}
+	echocmds = 1;
 	if (argc == 1) {
 		close(0);
 		if ((r = open(argv[1], O_RDONLY)) < 0) {
@@ -245,11 +468,17 @@ int main(int argc, char **argv) {
 		}
 		user_assert(r == 0);
 	}
+
+	history_init();
+	syscall_mem_map(0, argv_shell, 0, argv_shell, PTE_D | PTE_LIBRARY);
+	syscall_mem_map(0, shared, 0, shared, PTE_D | PTE_LIBRARY);
+
 	for (;;) {
 		if (interactive) {
 			printf("\n$ ");
 		}
 		readline(buf, sizeof buf);
+		history_save(buf, strlen(buf));
 
 		if (buf[0] == '#') {
 			continue;
@@ -261,11 +490,15 @@ int main(int argc, char **argv) {
 			user_panic("fork: %d", r);
 		}
 		if (r == 0) {
-			runcmd(buf);
+			runcmd(buf, shellid);
 			exit();
 		} else {
 			wait(r);
 		}
+
+		
+		flushIndex();
+
 	}
 	return 0;
 }

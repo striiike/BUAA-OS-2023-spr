@@ -17,7 +17,7 @@ int dev_lookup(int dev_id, struct Dev **dev) {
 		}
 	}
 
-	debugf("[%08x] unknown device type %d\n", env->env_id, dev_id);
+	// debugf("[%08x] unknown device type %d\n", env->env_id, dev_id);
 	return -E_INVAL;
 }
 

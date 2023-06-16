@@ -80,7 +80,7 @@ int sys_env_destroy(u_int envid) {
 	struct Env *e;
 	try(envid2env(envid, &e, 1));
 
-	printk("[%08x] destroying %08x\n", curenv->env_id, e->env_id);
+	// printk("[%08x] destroying %08x\n", curenv->env_id, e->env_id);
 	env_destroy(e);
 	return 0;
 }
@@ -281,6 +281,8 @@ int sys_exofork(void) {
 
 	e->env_status = ENV_NOT_RUNNABLE;
 	e->env_pri = curenv->env_pri;
+
+	strcpy(e->env_dir, curenv->env_dir);
 	
 	return e->env_id;
 }
@@ -477,9 +479,10 @@ int sys_ipc_try_send(u_int envid, u_int value, u_int srcva, u_int perm) {
 // XXX: kernel does busy waiting here, blocking all envs
 int sys_cgetc(void) {
 	int ch;
-	while ((ch = scancharc()) == 0) {
-	}
-	return ch;
+	// while ((ch = scancharc()) == 0) {
+	// 	// sys_yield();
+	// }
+	return scancharc();
 }
 
 /* Overview:
@@ -549,6 +552,24 @@ int sys_read_dev(u_int va, u_int pa, u_int len) {
 	return 0;
 }
 
+
+
+void sys_ch_dir(u_int envid, char *buf) {
+	struct Env *e;
+	try(envid2env(envid, &e, 0));
+	memset(e->env_dir, 0, e->env_dir);
+
+	strcpy(e->env_dir, buf);
+
+}
+
+void sys_get_cwd(u_int envid, char *back) {
+	struct Env *e;
+	try(envid2env(envid, &e, 0));
+
+	strcpy(back, e->env_dir);
+}
+
 void *syscall_table[MAX_SYSNO] = {
     [SYS_putchar] = sys_putchar,
     [SYS_print_cons] = sys_print_cons,
@@ -568,6 +589,8 @@ void *syscall_table[MAX_SYSNO] = {
     [SYS_cgetc] = sys_cgetc,
     [SYS_write_dev] = sys_write_dev,
     [SYS_read_dev] = sys_read_dev,
+	[SYS_ch_dir] = sys_ch_dir,
+	[SYS_get_cwd] = sys_get_cwd,
 };
 
 /* Overview:

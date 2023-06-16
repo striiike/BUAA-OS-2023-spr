@@ -17,8 +17,7 @@ ifeq ($(call lab-ge,5), true)
 			file.o \
 			fsipc.o \
 			console.o \
-			fprintf.o
-
+			fprintf.o 
 endif
 
 ifeq ($(call lab-ge,6), true)
@@ -27,7 +26,7 @@ ifeq ($(call lab-ge,6), true)
 			testpiperace.x \
 			testptelibrary.x
 
-	USERLIB      += wait.o spawn.o pipe.o
+	USERLIB      += wait.o spawn.o pipe.o history_cmd.o work_dir.o
 	USERAPPS     := num.b  \
 			echo.b \
 			halt.b \
@@ -41,7 +40,12 @@ ifeq ($(call lab-ge,6), true)
 			testbss.b \
 			testfdsharing.b \
 			pingpong.b \
-			init.b
+			init.b\
+			test_AND.b \
+			tree.b \
+			touch.b \
+			mkdir.b  \
+			history.b
 endif
 
 USERLIB := $(addprefix lib/, $(USERLIB)) $(wildcard ../lib/*.o)

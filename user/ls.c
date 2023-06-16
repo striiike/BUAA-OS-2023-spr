@@ -80,10 +80,22 @@ int main(int argc, char **argv) {
 	ARGEND
 
 	if (argc == 0) {
-		ls("/", "");
+		char path[100];
+		memset(path, 0, sizeof path);
+		syscall_get_cwd(0, path);
+		if (strcmp(path, "/"))
+			strcat(path, "/");
+		ls(path, path);
 	} else {
+		
+
 		for (i = 0; i < argc; i++) {
-			ls(argv[i], argv[i]);
+			char path[100];
+			memset(path, 0, sizeof path);	
+			strcpy(path, argv[i]);
+			if (strcmp(path, "/"))
+				strcat(path, "/");		
+			ls(path, path);
 		}
 	}
 	printf("\n");

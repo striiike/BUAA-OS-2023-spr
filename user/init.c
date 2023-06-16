@@ -21,6 +21,7 @@ int main(int argc, char **argv) {
 	int i, r, x, want;
 
 	debugf("init: running\n");
+	// stdin should be 0, because no file descriptors are open yet
 
 	want = 0xf989e;
 	if ((x = sum((char *)&data, sizeof data)) != want) {
@@ -42,14 +43,7 @@ int main(int argc, char **argv) {
 
 	debugf("init: running sh\n");
 
-	// stdin should be 0, because no file descriptors are open yet
-	if ((r = opencons()) != 0) {
-		user_panic("opencons: %d", r);
-	}
-	// stdout
-	if ((r = dup(0, 1)) < 0) {
-		user_panic("dup: %d", r);
-	}
+
 
 	while (1) {
 		debugf("init: starting sh\n");

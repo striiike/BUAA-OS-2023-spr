@@ -97,7 +97,20 @@ void serve_open(u_int envid, struct Fsreq_open *rq) {
 	}
 
 	// Open the file.
-	if ((r = file_open(rq->req_path, &f)) < 0) {
+	while ((r = file_open(rq->req_path, &f)) < 0) {
+
+		if (r == -E_NOT_FOUND && rq->req_omode & O_CREAT) {
+			// debugf("rq->req_path : %s\n", rq->req_path);
+			file_create(rq->req_path, &f);
+			continue;
+		} else if (r == -E_NOT_FOUND && rq->req_omode & O_MKDIR) {
+			// debugf("rq->req_path : %s\n", rq->req_path);
+			r = file_create(rq->req_path, &f);
+			f->f_type = FTYPE_DIR;
+			ipc_send(envid, r, 0, 0);
+			return;
+		}
+
 		ipc_send(envid, r, 0, 0);
 		return;
 	}
@@ -115,6 +128,73 @@ void serve_open(u_int envid, struct Fsreq_open *rq) {
 
 	ipc_send(envid, 0, o->o_ff, PTE_D | PTE_LIBRARY);
 }
+
+void serve_temp(u_int envid, struct Fsreq_temp *rq) {
+	u_char path[MAXPATHLEN];
+	struct File *f;
+	struct Filefd *ff;
+	int fileid;
+	int r;
+	struct Open *o;
+
+	struct Open *pOpen;
+	if ((r = open_lookup(envid, rq->dir_fileid, &pOpen)) < 0) {
+		ipc_send(envid, r, 0, 0);
+		return;
+	}
+	struct File *dir = pOpen->o_file;
+
+	if ((r = open_alloc(&o)) < 0) {
+		ipc_send(envid, r, 0, 0);
+	}
+
+
+
+	// Open the file.
+	// if ((r = file_temp(dir, rq->req_path, &f)) < 0) {
+	// 	ipc_send(envid, r, 0, 0);
+	// 	return;
+	// }
+
+	while ((file_temp(dir, rq->req_path, &f)) < 0) {
+
+		if (r == -E_NOT_FOUND && rq->req_omode & O_CREAT) {
+			// debugf("rq->req_path : %s\n", rq->req_path);
+			file_create(rq->req_path, &f);
+			continue;
+		} else if (r == -E_NOT_FOUND && rq->req_omode & O_MKDIR) {
+			// debugf("rq->req_path : %s\n", rq->req_path);
+			r = file_create(rq->req_path, &f);
+			f->f_type = FTYPE_DIR;
+			ipc_send(envid, r, 0, 0);
+			return;
+		}
+
+		ipc_send(envid, r, 0, 0);
+		return;
+	}
+
+	// Save the file pointer.
+	o->o_file = f;
+
+	// Fill out the Filefd structure
+	ff = (struct Filefd *)o->o_ff;
+	ff->f_file = *f;
+	ff->f_fileid = o->o_fileid;
+	o->o_mode = rq->req_omode;
+	ff->f_fd.fd_omode = o->o_mode;
+	ff->f_fd.fd_dev_id = devfile.dev_id;
+
+	ipc_send(envid, 0, o->o_ff, PTE_D | PTE_LIBRARY);
+
+}
+
+
+
+
+
+
+
 
 void serve_map(u_int envid, struct Fsreq_map *rq) {
 	struct Open *pOpen;
@@ -246,6 +326,10 @@ void serve(void) {
 
 		case FSREQ_SYNC:
 			serve_sync(whom);
+			break;
+
+		case FSREQ_TEMP:
+			serve_temp(whom, (struct Fsreq_temp *)REQVA);
 			break;
 
 		default:

@@ -76,3 +76,13 @@ int syscall_read_dev(void *va, u_int dev, u_int len) {
 
 	return msyscall(SYS_read_dev, va, dev, len);
 }
+
+
+void syscall_ch_dir(u_int envid, char *buf) {
+	msyscall(SYS_ch_dir, envid, buf);
+}
+
+
+void syscall_get_cwd(u_int envid, char *back) {
+	msyscall(SYS_get_cwd, envid, back);
+}

@@ -106,7 +106,16 @@ int spawn(char *prog, char **argv) {
 	// Return the error if 'open' fails.
 	int fd;
 	if ((fd = open(prog, O_RDONLY)) < 0) {
-		return fd;
+		char buf[20];
+		memset(buf, 0, sizeof buf);
+		strcpy(buf, prog);
+		int len = strlen(prog);
+		buf[len] = '.';
+		buf[len + 1] = 'b';
+		buf[len + 2] = '\0';
+		if ((fd = open(buf, O_RDONLY)) < 0) {
+			return fd;
+		}
 	}
 
 	// Step 2: Read the ELF header (of type 'Elf32_Ehdr') from the file into 'elfbuf' using
@@ -217,6 +226,7 @@ int spawn(char *prog, char **argv) {
 		debugf("spawn: syscall_set_env_status %x: %d\n", child, r);
 		goto err2;
 	}
+	// printf("is it wrong %x?\n", child);
 	return child;
 
 err2:

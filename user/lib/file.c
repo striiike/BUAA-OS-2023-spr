@@ -28,6 +28,35 @@ struct Dev devfile = {
 int open(const char *path, int mode) {
 	int r;
 
+	char full_path[100];
+	memset(full_path, 0, sizeof full_path);
+	if (path[0] == '/') {
+		strcpy(full_path, path);
+	} else {
+		syscall_get_cwd(0, full_path);
+		strcat(full_path, "/");
+		strcat(full_path, path);
+	}
+
+	// debugf("i am opening is %s\n", path);
+	// if (path[0] != '/') {
+	// 	// debugf("path is %s\n", path);
+	// 	char full_path[100];
+	// 	memset(full_path, 0, sizeof full_path);
+	// 	syscall_get_cwd(0, full_path);
+
+		
+	// 	// debugf("full_path is %s\n", full_path);
+	// 	int dirfd = open(full_path, mode);
+
+	// 	// debugf("dirfd is %d\n", dirfd);
+
+	// 	return openat(dirfd, path, mode);
+	// }
+
+
+	// printf("i am opening %s\n", full_path);
+
 	// Step 1: Alloc a new 'Fd' using 'fd_alloc' in fd.c.
 	// Hint: return the error code if failed.
 	struct Fd *fd;
@@ -38,7 +67,55 @@ int open(const char *path, int mode) {
 	// Step 2: Prepare the 'fd' using 'fsipc_open' in fsipc.c.
 	/* Exercise 5.9: Your code here. (2/5) */
 
-	try(fsipc_open(path, mode, fd));
+	try(fsipc_open(full_path, mode, fd));
+
+	// Step 3: Set 'va' to the address of the page where the 'fd''s data is cached, using
+	// 'fd2data'. Set 'size' and 'fileid' correctly with the value in 'fd' as a 'Filefd'.
+	char *va;
+	struct Filefd *ffd;
+	u_int size, fileid;
+	/* Exercise 5.9: Your code here. (3/5) */
+
+	va = fd2data(fd);
+	ffd = (struct Filefd *) fd;
+	size = (ffd->f_file).f_size;
+	fileid = ffd->f_fileid;
+
+	if (mode & O_APPEND) {
+        ffd->f_fd.fd_offset = size;
+    }
+
+	// Step 4: Alloc pages and map the file content using 'fsipc_map'.
+	for (int i = 0; i < size; i += BY2PG) {
+		/* Exercise 5.9: Your code here. (4/5) */
+
+		try(fsipc_map(fileid, i, va + i));
+		
+	}
+
+	// Step 5: Return the number of file descriptor using 'fd2num'.
+	/* Exercise 5.9: Your code here. (5/5) */
+	// debugf("@@@ checkpoint: fd2num\n");
+	return fd2num(fd);
+
+}
+
+// test
+int openat(int dirfd, const char *path, int mode) {
+	struct Fd *fd;
+	struct Filefd *dir_ffd;
+	int r;
+	u_int i;
+
+	struct Fd *dir;
+	fd_lookup(dirfd, &dir);
+	u_int dir_fileid;
+	dir_ffd = ((struct Filefd *)dir);
+	dir_fileid = dir_ffd->f_fileid;
+
+	try(fd_alloc(&fd));
+
+	fsipc_temp(dir_fileid, path, mode, fd);
 
 	// Step 3: Set 'va' to the address of the page where the 'fd''s data is cached, using
 	// 'fd2data'. Set 'size' and 'fileid' correctly with the value in 'fd' as a 'Filefd'.
@@ -66,6 +143,8 @@ int open(const char *path, int mode) {
 	return fd2num(fd);
 
 }
+
+
 
 // Overview:
 //  Close a file descriptor
