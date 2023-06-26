@@ -42,6 +42,18 @@ struct Env {
 	char env_dir[20];
 };
 
+
+
+struct Var {
+	char name[50];
+	char value[100];
+
+	// 1 for local
+	int isLocal;
+	int readOnly;
+	int shell_id;
+};
+
 LIST_HEAD(Env_list, Env);
 TAILQ_HEAD(Env_sched_list, Env);
 extern struct Env *curenv;		     // the current env

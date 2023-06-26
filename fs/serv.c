@@ -101,11 +101,11 @@ void serve_open(u_int envid, struct Fsreq_open *rq) {
 
 		if (r == -E_NOT_FOUND && rq->req_omode & O_CREAT) {
 			// debugf("rq->req_path : %s\n", rq->req_path);
-			file_create(rq->req_path, &f);
+			file_create(rq->req_path, &f, NULL);
 			continue;
 		} else if (r == -E_NOT_FOUND && rq->req_omode & O_MKDIR) {
 			// debugf("rq->req_path : %s\n", rq->req_path);
-			r = file_create(rq->req_path, &f);
+			r = file_create(rq->req_path, &f, NULL);
 			f->f_type = FTYPE_DIR;
 			ipc_send(envid, r, 0, 0);
 			return;
@@ -156,15 +156,15 @@ void serve_temp(u_int envid, struct Fsreq_temp *rq) {
 	// 	return;
 	// }
 
-	while ((file_temp(dir, rq->req_path, &f)) < 0) {
-
+	while ((r = file_temp(dir, rq->req_path, &f)) < 0) {
+		// printf("i am generating \n");
 		if (r == -E_NOT_FOUND && rq->req_omode & O_CREAT) {
 			// debugf("rq->req_path : %s\n", rq->req_path);
-			file_create(rq->req_path, &f);
+			file_create(rq->req_path, &f, dir);
 			continue;
 		} else if (r == -E_NOT_FOUND && rq->req_omode & O_MKDIR) {
 			// debugf("rq->req_path : %s\n", rq->req_path);
-			r = file_create(rq->req_path, &f);
+			r = file_create(rq->req_path, &f, dir);
 			f->f_type = FTYPE_DIR;
 			ipc_send(envid, r, 0, 0);
 			return;

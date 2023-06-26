@@ -736,12 +736,23 @@ int file_temp(struct File *par_dir, char *path, struct File **pfile) {
 // Post-Condition:
 //  On success set *file to point at the file and return 0.
 //  On error return < 0.
-int file_create(char *path, struct File **file) {
+int file_create(char *path, struct File **file, struct File *par_dir) {
 	char name[MAXNAMELEN];
 	int r;
 	struct File *dir, *f;
+	
+	char full_path[100];
+	memset(full_path, 0, sizeof full_path);
+	if (path[0] == '/') {
+		strcpy(full_path, path);
+	} else {
+		syscall_get_cwd(0, full_path);
+		if (strcmp(full_path, "/"))
+			strcat(full_path, "/");
+		strcat(full_path, path);
+	}
 
-	if ((r = walk_path(path, &dir, &f, name)) == 0) {
+	if ((r = walk_path(full_path, &dir, &f, name)) == 0) {
 		return -E_FILE_EXISTS;
 	}
 
@@ -752,6 +763,8 @@ int file_create(char *path, struct File **file) {
 	if (dir_alloc_file(dir, &f) < 0) {
 		return r;
 	}
+
+	printf("path is %s\n", full_path);
 
 	strcpy(f->f_name, name);
 	*file = f;

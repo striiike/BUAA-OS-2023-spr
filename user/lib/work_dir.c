@@ -5,9 +5,7 @@ void cd(u_int envid, char *buf) {
 
     char full_path[100];
 	memset(full_path, 0, sizeof full_path);
-	// debugf("%c ", buf[0]);
 	if (buf[0] == '/') {
-		// debugf("%s ", buf);
 		strcpy(full_path, buf);
 	} else {
 		syscall_get_cwd(0, full_path);

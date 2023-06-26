@@ -25,8 +25,13 @@ enum {
 
 	SYS_ch_dir,
 	SYS_get_cwd,
-
-
+	
+	SYS_shell_id_alloc,
+	SYS_declare_all,
+	SYS_declare_var,
+	SYS_unset_var,
+	SYS_get_var,
+	SYS_destroy_shell,
 	MAX_SYSNO,
 };
 

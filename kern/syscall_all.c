@@ -8,6 +8,9 @@
 
 extern struct Env *curenv;
 
+static int var_num = 0;
+static struct Var vars[4096];
+static int shell_num = 0;
 /* Overview:
  * 	This function is used to print a character on screen.
  *
@@ -480,7 +483,6 @@ int sys_ipc_try_send(u_int envid, u_int value, u_int srcva, u_int perm) {
 int sys_cgetc(void) {
 	int ch;
 	// while ((ch = scancharc()) == 0) {
-	// 	// sys_yield();
 	// }
 	return scancharc();
 }
@@ -570,6 +572,94 @@ void sys_get_cwd(u_int envid, char *back) {
 	strcpy(back, e->env_dir);
 }
 
+int sys_shell_id_alloc() {
+	return shell_num++;
+}
+
+void sys_declare_all(u_int envid) {
+	int shellid = envid;
+	printk("Name        Value       isLocal     ReadOnly    \n");
+	for (int i = 0; i < var_num; i++) {
+		if ((!vars[i].isLocal || shellid == vars[i].shell_id)) {
+			if (vars[i].name[0]) {
+				printk("%-12s%-12s", vars[i].name, vars[i].value);
+				printk("%-12d%-12d\n", vars[i].isLocal, vars[i].readOnly);
+			}
+		}
+	}
+}
+
+void sys_declare_var(u_int envid, char *buf, char *value, int isLocal, int readOnly) {
+
+	int shellid = envid;
+
+	// printk("buf is %s\n", buf);
+	// printk("value is %s\n", value);
+
+	for (int i = 0; i < var_num; i++) {
+		if (!strcmp(vars[i].name, buf) && (!vars[i].isLocal || shellid == vars[i].shell_id)) {
+			if (vars[i].readOnly) {
+				printk("Error: read only!\n");
+				return;
+			}
+			vars[i].isLocal = isLocal;
+			vars[i].readOnly = readOnly;
+			memset(vars[i].value, 0, sizeof vars[i].value);
+			strcpy(vars[i].value, value);
+			return;
+		}
+	}
+	
+	vars[var_num].isLocal = isLocal;
+	vars[var_num].shell_id = shellid;
+	vars[var_num].readOnly = readOnly;
+	strcpy(vars[var_num].name, buf);
+	strcpy(vars[var_num].value, value);
+	var_num++;
+
+}
+
+void sys_unset_var(u_int envid, char *buf) {
+	int shellid = envid;
+
+	for (int i = 0; i < var_num; i++) {
+		if (!strcmp(vars[i].name, buf) && (!vars[i].isLocal || shellid == vars[i].shell_id)) {
+			if (vars[i].readOnly) {
+				printk("Error: read only!\n");
+				return;
+			}
+			memset(vars[i].value, 0, sizeof vars[i].value);
+			return;
+		}
+	}
+	printk("Error: No such var!\n");
+}
+
+void sys_get_var(u_int envid, char *buf, char *back) {
+	int shellid = envid;
+
+
+	for (int i = 0; i < var_num; i++) {
+		// printk("i is %d\n", i);
+		// printk("name is %s, value is %s\n, local %d\n", vars[i].name, vars[i].value, vars[i].isLocal);
+		// printk("user is %d\n", vars[i].shell_id);
+		if (!strcmp(vars[i].name, buf) && (!vars[i].isLocal || shellid == vars[i].shell_id)) {
+			strcpy(back, vars[i].value);
+			return;
+		}
+	}
+	printk("Error: No such var!\n");
+}
+
+void sys_destroy_shell(u_int shellid) {
+	for (int i = 0; i < var_num; i++) {
+		if (shellid == vars[i].shell_id) {
+			memset(vars[i].value, 0, sizeof vars[i].value);
+		}
+	}
+	printk("Destroy Local Var! %d\n", shellid);
+}
+
 void *syscall_table[MAX_SYSNO] = {
     [SYS_putchar] = sys_putchar,
     [SYS_print_cons] = sys_print_cons,
@@ -589,8 +679,17 @@ void *syscall_table[MAX_SYSNO] = {
     [SYS_cgetc] = sys_cgetc,
     [SYS_write_dev] = sys_write_dev,
     [SYS_read_dev] = sys_read_dev,
+
 	[SYS_ch_dir] = sys_ch_dir,
 	[SYS_get_cwd] = sys_get_cwd,
+
+	[SYS_shell_id_alloc] = sys_shell_id_alloc,
+	[SYS_declare_all] = sys_declare_all,
+    [SYS_declare_var] = sys_declare_var,
+	[SYS_unset_var] = sys_unset_var,
+	[SYS_get_var] = sys_get_var,
+	[SYS_destroy_shell] = sys_destroy_shell,
+	
 };
 
 /* Overview:

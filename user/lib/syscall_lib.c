@@ -86,3 +86,27 @@ void syscall_ch_dir(u_int envid, char *buf) {
 void syscall_get_cwd(u_int envid, char *back) {
 	msyscall(SYS_get_cwd, envid, back);
 }
+
+void syscall_declare_all(u_int envid) {
+	msyscall(SYS_declare_all, envid);
+}
+
+void syscall_declare_var(u_int envid, char *buf, char *value, int isLocal, int readOnly) {
+	msyscall(SYS_declare_var, envid, buf, value, isLocal, readOnly);
+}
+
+void syscall_unset_var(u_int envid, char *buf) {
+	msyscall(SYS_unset_var, envid, buf);
+}
+
+void syscall_get_var(u_int envid, char *buf, char *back) {
+	msyscall(SYS_get_var, envid, buf, back);
+}
+
+int syscall_shell_id_alloc() {
+	msyscall(SYS_shell_id_alloc);
+}
+
+void syscall_destroy_shell(u_int shellid) {
+	msyscall(SYS_destroy_shell, shellid);
+}

@@ -59,6 +59,8 @@ static int D[1024];
 // 	return 'w';
 // }
 
+int id_shell = 0;
+ 
 int _gettoken(char *s, char **p1, char **p2) {
     *p1 = 0;
     *p2 = 0;
@@ -84,7 +86,7 @@ int _gettoken(char *s, char **p1, char **p2) {
     if (*s == '\"') {
         *p1 = s + 1;
         *s++ = 0;
-        while (*s != 34 && *s) {
+        while (*s != '\"' && *s) {
             s++;
         } 
         if (*s == 0) {
@@ -96,7 +98,7 @@ int _gettoken(char *s, char **p1, char **p2) {
     } else {
         *p1 = s;
         while (*s && !strchr(WHITESPACE SYMBOLS, *s)) {
-                s++;
+				s++;
         }
         *p2 = s;
     }
@@ -118,6 +120,14 @@ int gettoken(char *s, char **p1) {
 }
 
 #define MAXARGS 128
+
+int printPwd() {
+	char tmp[30];
+	memset(tmp, 0, sizeof tmp);
+	syscall_get_cwd(0, tmp);
+	printf("%s", tmp);
+	return strlen(tmp);
+}
 
 int parsecmd(char **argv, int *rightpipe, int *multi_task) {
 	int argc = 0;
@@ -220,15 +230,6 @@ int parsecmd(char **argv, int *rightpipe, int *multi_task) {
 			break;
 		
 		case '&':;
-			// argv[argc] = 0;
-			
-			// for (int i = 0; i < argc; i++) {
-			// 	strcpy(argv_shell[i], argv[i]);
-			// }
-			// memset(argv_shell[argc], 0, sizeof argv_shell[0]);
-			// shared[1] = argc;
-			// shared[0] = '&';
-			// return parsecmd(argv, rightpipe, multi_task);
 			int ret = fork();
 			if (ret == 0) {
 				return argc;
@@ -248,6 +249,40 @@ int parsecmd(char **argv, int *rightpipe, int *multi_task) {
 // 2 for pwd
 // 0 for normal
 
+void declare(int argc, char **argv) {
+	int isLocal = 1;
+	int readOnly = 0;
+	ARGBEGIN {
+		case 'x':
+			isLocal = 0;
+			break;
+		case 'r':
+			readOnly = 1;
+			break;
+		default:
+			break;
+		}
+	ARGEND
+	char name[50];
+	char value[100];
+	int i, j;
+	for (i = 0; i < argc; i++) {
+		int len = strlen(argv[i]);
+		for (j = 0; j < len; j++) {
+			if (argv[i][j] == '=') {
+				break;
+			}
+		}
+		memset(name, 0, sizeof name);
+		memset(value, 0, sizeof value);
+		strncpy(name, argv[i], j);
+		strcpy(value, argv[i] + j + 1);
+		declare_var(id_shell, name, value, isLocal, readOnly);
+	}
+}
+
+
+
 void runcmd(char *s, int shellid) {
 	gettoken(s, 0);
 
@@ -259,7 +294,9 @@ void runcmd(char *s, int shellid) {
 		return;
 	}
 	argv[argc] = 0;
-
+	// for (int i= 0; i< argc;i++) {
+	// 	printf("%s\n", argv[i]);
+	// }
 	if (!strcmp(argv[0], "cd")) {
 		if (argv[1]) {
 			int fdnum = open(argv[1], O_RDONLY);
@@ -278,6 +315,21 @@ void runcmd(char *s, int shellid) {
 
 	if (!strcmp(argv[0], "pwd")) {
 		pwd(shellid, NULL);
+		return;
+	}
+
+	if (!strcmp(argv[0], "declare")) {
+		if (argc == 1) {
+			syscall_declare_all(id_shell);
+		}
+		declare(argc, argv);
+		return;
+	}
+
+	if (!strcmp(argv[0], "unset")) {
+		for (int i = 1; i < argc; i++) {
+			unset_var(id_shell, argv[i]);
+		}
 		return;
 	}
 
@@ -315,20 +367,23 @@ void moveDirection(char tmp, int *index, char *buf) {
 	case 'A':
 		printf("\x1b[B\x1b[2K\x1b[G");
 		getLastHistory(buf);
-		printf("$ %s", buf);
+		printPwd();
+			printf(" $ ");
+		printf("%s", buf);
 		*index = strlen(buf) - 1;
 		break;
 	case 'B':
 		printf("\x1b[2K\x1b[G");
 		getNextHistory(buf);
-		printf("$ %s", buf);
+		printPwd();
+			printf(" $ ");
+		printf("%s", buf);
 		*index = strlen(buf) - 1;
 		break;
 	case 'C':
 		if (*index > strlen(buf) - 1) {
 			printf("\x1b[D");
 			*index -= 1;
-		} else {
 		}	
 		break;
 	case 'D':
@@ -357,6 +412,9 @@ void readline(char *buf, u_int n) {
 			exit();
 		}
 
+		if (c == '\r' || c == '\n') {
+			return;
+		}
 		if (c == '\x1b') {
 			char tmp[10];
 			memset(tmp, 0, sizeof tmp);
@@ -375,43 +433,60 @@ void readline(char *buf, u_int n) {
 			}
 
 			moveDirection(tmp[1], &i, buf);
-
-
 			continue;
-
 		}
 
 		
 
 
 		if (c == '\b' || c == 0x7f) {
-			if (i > 0) {
-				i -= 1;
-			} else {
-				i = -1;
-			}
-			if (buf[i] != '\b') {
-				buf[i] = ' ';
-				printf("\b \b");
-			}
-
-			// printf("\n");
-			// for (int j = 0; j < strlen(buf); j++) {
-			// 	printf("%d ", buf[j]);
+			// if (i == strlen(buf)) {
+			// 	delete(buf, i - 1 , 1);
+			// 	printf("\b \b");
+			// 	i--;
+			// 	continue;
 			// }
-			// printf("\n");
-
+			if (i == 0) {
+				// printf("\x1b[1C");
+				continue;
+			}
+			i-=1;
+			delete(buf, i , 1);
+			printf("\x1b[G\x1b[K");
+			int length = printPwd();
+			printf(" $ ");
+			printf("%s", buf);
+			printf("\x1b[G");
+			
+			for (int col_num = 0; col_num < i + 3 + length; col_num++) {
+				printf("\x1b[1C");
+			}
+			i--;
 			continue;
 		}
 
-		buf[i] = c;
 
-			// printf("\n");
-			// for (int j = 0; j < strlen(buf); j++) {
-			// 	printf("%d ", buf[j]);
-			// }
-			// printf("\n");
+		if (i != strlen(buf)) {
+			insert(buf, i, &c, 1);
+			printf("\x1b[G\x1b[K");
+			int length = printPwd();
+			printf(" $ ");
+			printf("%s", buf);
+			printf("\x1b[G");
+			for (int col_num = 0; col_num < i + 4 + length; col_num++) {
+				printf("\x1b[1C");
+			}
+		} else {
+			buf[i] = c;
+		}
 
+
+
+		if (buf[i] == '\r' || buf[i] == '\n') {
+			buf[i] = 0;
+			return;
+		}
+		
 		if (buf[i] == '\r' || buf[i] == '\n') {
 			buf[i] = 0;
 			return;
@@ -473,11 +548,44 @@ int main(int argc, char **argv) {
 	syscall_mem_map(0, argv_shell, 0, argv_shell, PTE_D | PTE_LIBRARY);
 	syscall_mem_map(0, shared, 0, shared, PTE_D | PTE_LIBRARY);
 
+
+	id_shell = syscall_shell_id_alloc();
+	// printf("shell id is %d\n", id_shell);
 	for (;;) {
 		if (interactive) {
-			printf("\n$ ");
+			printf("\n");
+			printPwd();
+			printf(" $ ");
+			
 		}
+		memset(buf, 0, sizeof buf);
 		readline(buf, sizeof buf);
+		if (!strcmp(buf, "exit")) {
+			syscall_destroy_shell(id_shell);
+			exit();
+		}
+
+		int count = 0;
+		for (int i = 0; i < strlen(buf); ++i) {
+			if (buf[i] == '\"') {
+				count++;
+				if (count % 2 == 0) {
+					continue;
+				}
+				int j = i;
+				while (buf[j] != ' ' && j > 0) {
+					j--;
+				}
+				for (int k = i - 1; k > j; k--){
+					buf[k+1]=buf[k];
+				}
+				buf[j + 1] = '\"';
+
+
+			}
+		}
+
+
 		history_save(buf, strlen(buf));
 
 		if (buf[0] == '#') {
@@ -486,6 +594,34 @@ int main(int argc, char **argv) {
 		if (echocmds) {
 			printf("# %s\n", buf);
 		}
+
+		char name[50];
+		char value[100];
+		for (int i = 0; buf[i]; i++) {
+			// debugf("for ing  %d\n", i);
+			int len = 0;
+			if (buf[i] == '$') {
+				// debugf("i get name %s\n", name);
+				memset(name, 0, sizeof name);
+				memset(value, 0, sizeof value);
+				name[0] = buf[i];
+				// debugf("i get name %s\n", name);
+				while (!strchr(SYMBOLS WHITESPACE, buf[i + len + 1]) && buf[i + len + 1]) {
+					name[len + 1] = buf[i + len + 1];
+					len++;
+				}
+				// debugf("i get name %s\n", name + 1);
+				
+				get_var(id_shell, name + 1, value);
+				// debugf("i get value %s\n", value);
+				replace(buf, name, len + 1, value);
+			}
+		}
+
+		// if (echocmds) {
+		// 	printf("# %s\n", buf);
+		// }
+
 		if ((r = fork()) < 0) {
 			user_panic("fork: %d", r);
 		}
